@@ -1,0 +1,3 @@
+# set default behaviour so that line endings are automatically
+# normalized regardless of operating system
+* text=auto
