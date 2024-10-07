@@ -5,22 +5,23 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-# Initialize Flask app
-app = Flask(__name__)
+# Initialize SQLAlchemy (without attaching it to the app)
+db = SQLAlchemy()
 
-# Enable cross-origin resource sharing
-CORS(app)
+def create_app():
+    app = Flask(__name__)
+    
+    # Enable CORS
+    CORS(app)
 
-# Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('URI_STRING')
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # Configure the database
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('URI_STRING')
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Initialize SQLAlchemy
-try:
-    db = SQLAlchemy(app)
-    print("Database connected successfully")
-except Exception as e:
-    print(f"Error connecting to the database: {e}")
+    # Initialize the database with the app
+    db.init_app(app)
+
+    return app
