@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship     
+from sqlalchemy.orm import relationship
 from config import db
 
+
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(120), unique=True, nullable=False)
@@ -19,5 +20,9 @@ class User(db.Model):
     # back_populates connects the two models to allow access in both directions
     # cascade='all, delete-orphan ensures if the user is deleted,
     # all their related sessions and password entries are deleted as well
-    sessions = relationship('UserSession', back_populates='user', cascade='all, delete-orphan')
-    password_entries = relationship('PasswordEntry', back_populates='user', cascade='all, delete-orphan')
+    sessions = relationship(
+        "UserSession", back_populates="user", cascade="all, delete-orphan"
+    )
+    password_entries = relationship(
+        "PasswordEntry", back_populates="user", cascade="all, delete-orphan"
+    )

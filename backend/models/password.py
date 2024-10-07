@@ -4,11 +4,12 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from config import db
 
+
 class PasswordEntry(db.Model):
-    __tablename__ = 'password_entries'
+    __tablename__ = "password_entries"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(255), nullable=False)
     username = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
@@ -20,4 +21,4 @@ class PasswordEntry(db.Model):
     moved_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationship
-    user = relationship('User', back_populates='password_entries')
+    user = relationship("User", back_populates="password_entries")
