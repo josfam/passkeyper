@@ -19,4 +19,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('URI_STRING')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize SQLAlchemy
-db = SQLAlchemy(app)
+try:
+    db = SQLAlchemy(app)
+    print("Database connected successfully")
+except Exception as e:
+    print(f"Error connecting to the database: {e}")
