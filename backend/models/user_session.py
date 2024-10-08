@@ -1,8 +1,8 @@
 #!/usr/bin/python3
+from api.v1.app import db
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from config import db
 
 
 class UserSession(db.Model):
