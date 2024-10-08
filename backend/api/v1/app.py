@@ -4,6 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
+from api.v1 import v1_bp
 
 
 # Initialize extensions
@@ -22,6 +23,7 @@ def create_app(config_class=DevelopmentConfig):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Register Blueprints
+    # Register the v1 API blueprint
+    app.register_blueprint(v1_bp)
 
     return app
