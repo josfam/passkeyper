@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
-import { Button } from "../ui/button";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button } from '../ui/button';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // Interface for typing props
 interface SidebarBtnProps {
@@ -14,8 +14,8 @@ const SidebarBtn = forwardRef<HTMLButtonElement, SidebarBtnProps>(
 	return (
 		<Button
 		ref={ref} // attach the reference to the button
-		variant="ghost"
-		className="
+		variant='ghost'
+		className='
 		w-full
 		rounded-none
 		text-xl
@@ -26,7 +26,7 @@ const SidebarBtn = forwardRef<HTMLButtonElement, SidebarBtnProps>(
 		hover:bg-slate-300
 		active:bg-slate-400
 		active:text-white
-		" size="lg"
+		' size='lg'
 		{...otherProps} // pass on other properties like onClick, and so on
 		>
 			<FontAwesomeIcon icon={ buttonIcon } />

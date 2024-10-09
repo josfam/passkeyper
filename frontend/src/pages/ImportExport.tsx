@@ -1,6 +1,6 @@
 const ImportExport = () => {
 	return (
-		<h1 className="text-2xl">Import / Export page</h1>
+		<h1 className='text-2xl'>Import / Export page</h1>
 	)
 }
 

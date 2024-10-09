@@ -1,6 +1,6 @@
 const Trash = () => {
 	return (
-		<h1 className="text-2xl">Trash page</h1>
+		<h1 className='text-2xl'>Trash page</h1>
 	)
 }
 

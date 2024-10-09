@@ -7,6 +7,7 @@ import './styles/App.css'
 import Trash from './pages/Trash'
 import ImportExport from './pages/ImportExport'
 import PasswordGenerator from './pages/PasswordGenerator'
+import Settings from './pages/Settings'
 
 const App = () => {
 
@@ -20,13 +21,13 @@ const App = () => {
 			<Sidebar />
 			{/* Right side page with content */}
 			<div id='content-area' className='
-				bg-white
-			'>
+				bg-white'>
 				<Routes>
 					<Route path='/passwords' element={<Passwords/>}></Route>
 					<Route path="/trash" element={<Trash />} />
 					<Route path='/import-export' element={<ImportExport/>} />
-					<Route path='/generator' element={<PasswordGenerator/>}/>
+					<Route path='/generator' element={<PasswordGenerator/>} />
+					<Route path='/settings' element={<Settings/>} />
 				</Routes>
 			</div>
 		</div>
