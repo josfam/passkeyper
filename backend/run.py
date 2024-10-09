@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from .api.v1.app import create_app, db
+from backend.api.v1.app import create_app, db
 from backend.models import User, PasswordEntry, UserSession
 
 
