@@ -1,22 +1,32 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 import Sidebar from './components/Sidebar'
-import PasswordGenerator from './pages/PasswordGenerator'
+// import PasswordGenerator from './pages/PasswordGenerator'
 import Passwords from './pages/Passwords'
 import './styles/App.css'
+import Trash from './pages/Trash'
+import ImportExport from './pages/ImportExport'
+import PasswordGenerator from './pages/PasswordGenerator'
 
 const App = () => {
 
   return (
     <Router>
-		<div id='app-container'>
+		<div id='app-container'
+		className='
+		inline-flex w-full
+		'>
 			{/* Sidebar that remains static */}
 			<Sidebar />
 			{/* Right side page with content */}
-			<div id='content-area'>
+			<div id='content-area' className='
+				bg-white
+			'>
 				<Routes>
 					<Route path='/passwords' element={<Passwords/>}></Route>
-					<Route path="/generator" element={<PasswordGenerator />} />
+					<Route path="/trash" element={<Trash />} />
+					<Route path='/import-export' element={<ImportExport/>} />
+					<Route path='/generator' element={<PasswordGenerator/>}/>
 				</Routes>
 			</div>
 		</div>

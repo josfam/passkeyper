@@ -1,0 +1,11 @@
+/* general styles */
+
+.dropdown-item {
+	@apply
+	text-center
+	text-xl
+	p-4
+	w-full
+	hover:font-medium
+	;
+}
