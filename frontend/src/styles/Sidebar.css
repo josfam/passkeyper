@@ -1,0 +1,17 @@
+ul {
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+
+	li {
+		list-style: none;
+		background-color: antiquewhite;
+		padding: 20px;
+	}
+}
+
+#sidebar {
+	min-width: 250px;
+	height: 100vh;
+	background-color: burlywood;
+}
