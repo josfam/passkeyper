@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-from config import DevelopmentConfig
+from backend.config import DevelopmentConfig
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-from api.v1 import v1_bp
+from . import v1_bp
 
 
 # Initialize extensions
