@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 from backend.api.v1.app import create_app, db
-from backend.models import User, PasswordEntry, UserSession
+from backend.models.user import User
+from backend.models.user_session import UserSession
+from backend.models.password import PasswordEntry
 
 
 app = create_app()
