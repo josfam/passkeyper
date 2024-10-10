@@ -8,6 +8,7 @@ for only authenticated users
 from v1.app import db
 from flask import Blueprint, jsonify, request, session, current_app
 from models import PasswordEntry
+from sqlalchemy.exc import SQLAlchemyError
 
 password_bp = Blueprint('password', __name__)
 
@@ -46,7 +47,6 @@ def create_a_password_entry():
         db.session.commit()
         return jsonify({"message":
                         "Password entry created successfully."}), 201
-    # except SQLAlchemyError as e:
-    except Exception as e:
+    except SQLAlchemyError as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Database error: " + str(e)}), 500
