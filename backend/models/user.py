@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from backend.api.v1.app import db
+from backend.models import db
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
