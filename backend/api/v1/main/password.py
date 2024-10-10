@@ -15,6 +15,7 @@ password_bp = Blueprint('password', __name__)
 
 @password_bp.route('/password', methods=['POST'])
 def create_a_password_entry():
+    '''creates a new password entry'''
     # checking if a user is authenticated ((logged in)) -- available session
     user_id = session.get('user_id')
     if not user_id:
