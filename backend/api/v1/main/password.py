@@ -76,3 +76,30 @@ def get_a_password(pass_ent_id):
     }
 
     return jsonify(password=pass_ent_data), 200
+
+@password_bp.route('/passwords', methods=['GET'])
+def get_passwords():
+    '''retrieves all the password entries of a certain user'''
+    # authenticating a user
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        # Querying the db to retieve all passwords linked to the user
+        passwords = PasswordEntry.query.filter_by(user_id=user_id, in_trash=False).all()
+
+        # Format the passwords to return
+        password_list = [
+            {
+                'name': password.name,
+                'username': password.username,
+                'password': password.password,
+                'url': password.url,
+                'notes': password.notes
+            }
+            for password in passwords
+        ]
+        return jsonify(passwords=password_list), 200
+    except Exception as e:
+        return jsonify({"error": "An error occurred while retrieving passwords"}), 500
