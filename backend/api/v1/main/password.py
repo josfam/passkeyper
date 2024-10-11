@@ -47,7 +47,32 @@ def create_a_password_entry():
         db.session.add(new_password)
         db.session.commit()
         return jsonify({"message":
-                        "Password entry created successfully."}), 201
+                        "Password entry created successfully. PassId: " + str(new_password.id)}), 201
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({"error": "Database error: " + str(e)}), 500
+
+@password_bp.route('/password/<int:pass_ent_id>', methods=['GET'])
+def get_a_password(pass_ent_id):
+    '''retrieves a password entry by id'''
+    # authenticating a user
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Querying the db to retieve the password by id provided
+    password_entry = PasswordEntry.query.filter_by(user_id=user_id, id=pass_ent_id).first()
+
+    if not password_entry:
+        return jsonify(message="Password entry not found"), 404
+
+    # Formatting the password entry
+    pass_ent_data = {
+        'name': password_entry.name,
+        'username': password_entry.username,
+        'password': password_entry.password,
+        'url': password_entry.url,
+        'notes': password_entry.notes
+    }
+
+    return jsonify(password=pass_ent_data), 200
