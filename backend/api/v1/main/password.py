@@ -6,9 +6,10 @@ for only authenticated users
 """
 
 from flask import Blueprint, jsonify, request, session
-from ....models import PasswordEntry 
+from ....models import PasswordEntry
 from sqlalchemy.exc import SQLAlchemyError
 from backend.api.v1.app import db
+from sqlalchemy.sql import func
 
 password_bp = Blueprint('password', __name__)
 
@@ -47,10 +48,12 @@ def create_a_password_entry():
         db.session.add(new_password)
         db.session.commit()
         return jsonify({"message":
-                        "Password entry created successfully. PassId: " + str(new_password.id)}), 201
+                        "Password entry created successfully. PassId: "
+                        + str(new_password.id)}), 201
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({"error": "Database error: " + str(e)}), 500
+
 
 @password_bp.route('/password/<int:pass_ent_id>', methods=['GET'])
 def get_a_password(pass_ent_id):
@@ -61,7 +64,8 @@ def get_a_password(pass_ent_id):
         return jsonify({"error": "Unauthorized"}), 401
 
     # Querying the db to retieve the password by id provided
-    password_entry = PasswordEntry.query.filter_by(user_id=user_id, id=pass_ent_id).first()
+    password_entry = PasswordEntry.query.filter_by(user_id=user_id,
+                                                   id=pass_ent_id).first()
 
     if not password_entry:
         return jsonify(message="Password entry not found"), 404
@@ -77,6 +81,7 @@ def get_a_password(pass_ent_id):
 
     return jsonify(password=pass_ent_data), 200
 
+
 @password_bp.route('/passwords', methods=['GET'])
 def get_passwords():
     '''retrieves all the password entries of a certain user'''
@@ -87,7 +92,8 @@ def get_passwords():
 
     try:
         # Querying the db to retieve all passwords linked to the user
-        passwords = PasswordEntry.query.filter_by(user_id=user_id, in_trash=False).all()
+        passwords = PasswordEntry.query.filter_by(user_id=user_id,
+                                                  in_trash=False).all()
 
         # Format the passwords to return
         password_list = [
@@ -102,4 +108,38 @@ def get_passwords():
         ]
         return jsonify(passwords=password_list), 200
     except Exception as e:
-        return jsonify({"error": "An error occurred while retrieving passwords"}), 500
+        return jsonify({"error":
+                        "An error occurred while retrieving passwords"}), 500
+
+
+@password_bp.route('/password/<int:pass_ent_id>', methods=['DELETE'])
+def move_to_trash(pass_ent_id):
+    """
+    moves a password entry to trash
+    """
+    # authenticating a user
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    password = PasswordEntry.query.filter_by(id=pass_ent_id, user_id=user_id,
+                                             in_trash=False).first()
+
+    if password is None:
+        return jsonify({"error": "Password not found"}), 404
+
+    try:
+        # moving the pass entry to trash and updating moved_at
+        password.in_trash = True
+        password.moved_at = func.now()
+
+        db.session.commit()
+
+        return jsonify({"message":
+                        "Password moved to trash successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error":
+                        "An error occurred while moving the password to trash"
+                        }), 500
