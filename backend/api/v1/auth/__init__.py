@@ -2,9 +2,11 @@
 from flask import Blueprint
 
 # Import blueprints in this folder
-from .register import register_bp
+from .signup import signup_bp
+from .login import login_bp
 
 auth_bp = Blueprint("auth", __name__)
 
 # Register individual blueprints for different routes
-auth_bp.register_blueprint(register_bp)
+auth_bp.register_blueprint(signup_bp)
+auth_bp.register_blueprint(login_bp)
