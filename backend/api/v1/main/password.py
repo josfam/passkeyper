@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 """
 handling /passwords endpoints to
-create, retrieve, update, delete a/(all) password(s)
+create, retrieve(one or all), update,
+move_to_trash, delete a/(all) password(s)
 for only authenticated users
 """
 
