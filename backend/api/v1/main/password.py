@@ -113,7 +113,7 @@ def get_passwords():
                         "An error occurred while retrieving passwords"}), 500
 
 
-@password_bp.route('/password/<int:pass_ent_id>', methods=['DELETE'])
+@password_bp.route('/password/<int:pass_ent_id>/trash', methods=['DELETE'])
 def move_to_trash(pass_ent_id):
     """
     moves a password entry to trash
