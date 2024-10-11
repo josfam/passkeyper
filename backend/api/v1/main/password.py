@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 """
 handling /passwords endpoints to
-create, retrieve(one or all), update,
-move_to_trash, delete a/(all) password(s)
+create, get(one or all), update,
+move_to_trash a password
 for only authenticated users
 """
 
@@ -143,37 +143,6 @@ def move_to_trash(pass_ent_id):
         db.session.rollback()
         return jsonify({"error":
                         "An error occurred while moving the password to trash"
-                        }), 500
-
-
-@password_bp.route('/password/<int:pass_ent_id>', methods=['DELETE'])
-def perm_del(pass_ent_id):
-    """
-    delete a password entry existing in trash permanently
-    """
-    # authenticating a user
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    password = PasswordEntry.query.filter_by(id=pass_ent_id, user_id=user_id,
-                                             in_trash=True).first()
-
-    if password is None:
-        return jsonify({"error": "Password not found"}), 404
-
-    try:
-        # deleting pass entry permanently
-        db.session.delete(password)
-        db.session.commit()
-
-        return jsonify({"message":
-                        "Password deleted permanently"}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error":
-                        "An error occurred while deleting the password"
                         }), 500
 
 
