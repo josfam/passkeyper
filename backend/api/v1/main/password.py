@@ -144,3 +144,4 @@ def move_to_trash(pass_ent_id):
         return jsonify({"error":
                         "An error occurred while moving the password to trash"
                         }), 500
+
