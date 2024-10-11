@@ -15,7 +15,7 @@ migrate = Migrate()
 def check_session():
     """Check if user is logged in before accessing certain routes."""
     # List public routes that don't require authentication
-    public_routes = ["/login", "/signup"]
+    public_routes = ["/", "/login", "/signup"]
 
     # Allow access to public routes or if user is logged in
     if request.path in public_routes or "user_id" in session:
