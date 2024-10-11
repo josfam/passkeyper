@@ -175,3 +175,38 @@ def perm_del(pass_ent_id):
         return jsonify({"error":
                         "An error occurred while deleting the password"
                         }), 500
+
+
+@password_bp.route('/password/<int:pass_ent_id>', methods=['PATCH'])
+def update_a_password_entry(pass_ent_id):
+    '''Updates a password entry by pass id'''
+    # authenticating a user
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Getting the data from the request body
+    data = request.get_json()
+
+    # Selecting the proper passwrod entry
+    pass_entry = PasswordEntry.query.filter_by(id=pass_ent_id, user_id=user_id,
+                                               in_trash=False).first()
+
+    if not pass_entry:
+        return jsonify({"error": "Password entry not found"}), 404
+
+    # Determining updatable fields
+    updatable_fields = ['password', 'name', 'username', 'url', 'notes']
+
+    # Update the fields existing in the request data
+    for field in updatable_fields:
+        if field in data:
+            setattr(pass_entry, field, data[field])
+
+    # Update the timestamp
+    pass_entry.updated_at = func.now()
+
+    # Committing the changes to the database
+    db.session.commit()
+
+    return jsonify({"message": "Password entry updated successfully"}), 200
