@@ -5,6 +5,7 @@ from flask import Blueprint
 from .index import index_bp
 from .user import user_bp
 from .password import password_bp
+from .trash import trash_bp
 
 main_bp = Blueprint("main", __name__)
 
@@ -12,3 +13,4 @@ main_bp = Blueprint("main", __name__)
 main_bp.register_blueprint(index_bp)
 main_bp.register_blueprint(user_bp)
 main_bp.register_blueprint(password_bp)
+main_bp.register_blueprint(trash_bp)
