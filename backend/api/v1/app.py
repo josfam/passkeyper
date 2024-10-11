@@ -1,14 +1,9 @@
 #!/usr/bin/python3
 from backend.config import DevelopmentConfig
-from backend.models import db
+from backend.models import db, migrate, bcrypt
 from flask import Flask, jsonify, session, request
 from flask_cors import CORS
-from flask_migrate import Migrate
 from . import v1_bp
-
-
-# Initialize extensions
-migrate = Migrate()
 
 
 def check_session():
@@ -32,9 +27,10 @@ def create_app(config_class=DevelopmentConfig):
     # Apply configuration from config.py
     app.config.from_object(config_class)
 
-    # Initialize the database and Flask-Migrate
+    # Initialize the database, Flask-Migrate and Flask-Bcrypt
     db.init_app(app)
     migrate.init_app(app, db)
+    bcrypt.init_app(app)
 
     # Register the v1 API blueprint
     app.register_blueprint(v1_bp)

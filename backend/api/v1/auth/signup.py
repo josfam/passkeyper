@@ -1,43 +1,33 @@
 #!/usr/bin/python3
 from flask import Blueprint, request, jsonify
-from backend.models.user import User
-from backend.models import db
+from backend.utils.auth import Auth
 
+
+AUTH = Auth()
 
 signup_bp = Blueprint('signup', __name__)
 
 
 @signup_bp.route('/signup', methods=['POST'])
 def signup():
-    """create a user account and register entry in database"""
+    """Create a user account and register entry in database."""
     try:
         data = request.get_json()
         email = data.get('email')
-        password = data.get('password')  # Store plain text password
+        password = data.get('password')
         username = data.get('username')
         ek_salt = data.get('ek_salt')
 
         # Validate that required fields are present
         if not email or not password or not ek_salt:
             return jsonify({"error": "Email, password, and ek_salt are required"}), 400
-
-        # Check if email is already registered
-        if User.query.filter_by(email=email).first():
-            return jsonify({"error": "Email is already registered"}), 409
-
-        # Create a new user (password stored as plain text)
-        new_user = User(
-            email=email, 
-            hashed_master_password=password,  # Store the password directly (not hashed)
-            ek_salt=ek_salt, 
-            username=username
-        )
         
-        # Add the user to the database
-        db.session.add(new_user)
-        db.session.commit()
+        new_user = AUTH.register_user(email, password, username, ek_salt)
+        if new_user:
+            return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+        return jsonify({"error": "User could not be created"}), 500
 
-        return jsonify({"message": "User created successfully", "user_id": new_user.id}), 201
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 409
     except Exception as e:
-        # Log the error message
         return jsonify({"error": "An error occurred during signup"}), 500
