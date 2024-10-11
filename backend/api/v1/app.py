@@ -4,7 +4,6 @@ from backend.models import db
 from flask import Flask, jsonify, session, request
 from flask_cors import CORS
 from flask_migrate import Migrate
-from werkzeug.security import check_password_hash
 from . import v1_bp
 
 
@@ -19,7 +18,7 @@ def check_session():
 
     # Allow access to public routes or if user is logged in
     if request.path in public_routes or "user_id" in session:
-        return None  # Allow request to proceed
+        return None
 
     # Block access if user is not authenticated
     return jsonify({"error": "Unauthorized"}), 401
