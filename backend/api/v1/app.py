@@ -3,7 +3,7 @@ from backend.config import DevelopmentConfig
 from backend.models import db, migrate, bcrypt
 from flask import Flask, jsonify, session, request
 from flask_cors import CORS
-# from . import v1_bp   # moved to line 23
+from . import v1_bp
 
 
 def check_session():
@@ -20,7 +20,6 @@ def check_session():
 
 
 def create_app(config_class=DevelopmentConfig):
-    from . import v1_bp
     app = Flask(__name__)
 
     CORS(app)

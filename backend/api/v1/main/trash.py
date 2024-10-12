@@ -8,7 +8,7 @@ deleting all passwords permanently
 
 from flask import Blueprint, jsonify, request, session
 from ....models import PasswordEntry
-from backend.api.v1.app import db
+from backend.models import db
 from sqlalchemy.sql import func
 
 trash_bp = Blueprint('trash', __name__)
