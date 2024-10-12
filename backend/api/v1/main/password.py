@@ -6,10 +6,10 @@ move_to_trash a password
 for only authenticated users
 """
 
-from flask import Blueprint, jsonify, request, session
-from ....models import PasswordEntry
-from sqlalchemy.exc import SQLAlchemyError
 from backend.models import db
+from backend.models.password import PasswordEntry
+from flask import Blueprint, jsonify, request
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
 
 password_bp = Blueprint('password', __name__)
