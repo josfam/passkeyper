@@ -77,3 +77,34 @@ def perm_del(pass_ent_id):
         return jsonify({"error":
                         "An error occurred while deleting the password"
                         }), 500
+
+
+@trash_bp.route('/passwords', methods=['DELETE'])
+def del_all():
+    """
+    deletes all passwords linked to a user that are in trash
+    """
+    # authenticating a user
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    passwords = PasswordEntry.query.filter_by(user_id=user_id,
+                                             in_trash=True).all()
+
+    if not passwords:
+        return jsonify({"error": "No passwords to delete"}), 404
+
+    try:
+        for password in passwords:
+            db.session.delete(password)
+        db.session.commit()
+
+        return jsonify({"message":
+                        "All passwords deleted successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error":
+                        "An error occurred while deleting passwords"
+                        }), 500
