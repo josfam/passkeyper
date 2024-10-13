@@ -28,7 +28,7 @@ def create_app(config_class=DevelopmentConfig):
     # Initialize the database, migrate, cors and bcrypt
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app, resources={r"/*": {"origins": "0.0.0.0"}})
+    cors.init_app(app, resources={r"/*": {"origins": "0.0.0.0", "support_credentials": True}})
     bcrypt.init_app(app)
 
     # Register the v1 API blueprint
