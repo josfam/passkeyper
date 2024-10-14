@@ -8,7 +8,7 @@ for only authenticated users
 
 from backend.models import db
 from backend.models.password import PasswordEntry
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
 
@@ -92,9 +92,19 @@ def get_passwords():
         return jsonify({"error": "Unauthorized"}), 401
 
     try:
+        # Pagination parameters: page and per_page with default int values
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+
         # Querying the db to retieve all passwords linked to the user
         passwords = PasswordEntry.query.filter_by(user_id=user_id,
-                                                  in_trash=False).all()
+                                                  in_trash=False)
+
+        # Applying pagination using SQLAlchemy’s paginate feature --
+        # error_out=False: Prevents an error if page num is too high
+        # (e.g., requesting page 10 when only 5 pages exist)
+        paginated_passes = passwords.paginate(page=page, per_page=per_page,
+                                              error_out=False)
 
         # Format the passwords to return
         password_list = [
@@ -105,9 +115,14 @@ def get_passwords():
                 'url': password.url,
                 'notes': password.notes
             }
-            for password in passwords
+            for password in paginated_passes.items
         ]
-        return jsonify(passwords=password_list), 200
+        return jsonify({
+            'passwords': password_list,
+            'per_page': per_page,
+            'has_next': paginated_passes.has_next,
+            'has_prev': paginated_passes.has_prev
+        }), 200
     except Exception as e:
         return jsonify({"error":
                         "An error occurred while retrieving passwords"}), 500
