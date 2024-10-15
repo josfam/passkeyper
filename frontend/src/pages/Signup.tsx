@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
 
-const API_URL = 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 const Signup: React.FC = () => {
   const [email, setEmail] = useState('');
