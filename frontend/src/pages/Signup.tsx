@@ -1,48 +1,63 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "../components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 const Signup: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
-    const ekSalt = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const ekSalt =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
 
     try {
-      const response = await axios.post(`${API_URL}/signup`, {
-        email,
-        password,
-        username,
-        ek_salt: ekSalt
-      }, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await axios.post(
+        `${API_URL}/signup`,
+        {
+          email,
+          password,
+          username,
+          ek_salt: ekSalt,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (response.status === 201) {
-        navigate('/login');
+        navigate("/login");
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || 'An error occurred during signup');
+        setError(
+          err.response?.data?.error || "An error occurred during signup"
+        );
       } else {
-        setError('An unexpected error occurred');
+        setError("An unexpected error occurred");
       }
-      console.error('Signup error:', err);
+      console.error("Signup error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -96,15 +111,17 @@ const Signup: React.FC = () => {
                   Signing Up...
                 </>
               ) : (
-                'Sign Up'
+                "Sign Up"
               )}
             </Button>
           </form>
         </CardContent>
         <CardFooter>
           <p className="text-sm text-center w-full">
-            Already have an account?{' '}
-            <a href="/login" className="text-blue-600 hover:underline">Login</a>
+            Already have an account?{" "}
+            <a href="/login" className="text-blue-600 hover:underline">
+              Login
+            </a>
           </p>
         </CardFooter>
       </Card>
