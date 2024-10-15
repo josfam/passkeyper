@@ -21,7 +21,7 @@ const SidebarBtn = forwardRef<HTMLButtonElement, SidebarBtnProps>(
 		text-xl
 		h-16
 		flex-auto
-		justify-between
+		gap-6
 		px-14
 		hover:bg-slate-300
 		active:bg-slate-400
@@ -30,7 +30,9 @@ const SidebarBtn = forwardRef<HTMLButtonElement, SidebarBtnProps>(
 		{...otherProps} // pass on other properties like onClick, and so on
 		>
 			<FontAwesomeIcon icon={ buttonIcon } />
-			{ buttonLabel }
+			<div className='mr-auto'>
+				{ buttonLabel }
+			</div>
 		</Button>
 	)
 }
