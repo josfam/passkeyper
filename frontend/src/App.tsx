@@ -12,7 +12,7 @@ import Signup from './pages/Signup';
 import './styles/App.css';
 import './styles/base.css';
 
-const API_URL = 'http://127.0.0.1:5000';
+const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
