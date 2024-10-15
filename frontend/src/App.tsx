@@ -5,13 +5,12 @@ import Sidebar from './components/Sidebar';
 import Passwords from './pages/Passwords';
 import Trash from './pages/Trash';
 import ImportExport from './pages/ImportExport';
-// import PasswordGenerator from './pages/PasswordGenerator';
+import PasswordGenerator from './pages/PasswordGenerator';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import './styles/App.css';
 import './styles/base.css';
-// import 'react-toastify/ReactToastify.css'
 
 const API_URL = 'http://127.0.0.1:5000';
 
