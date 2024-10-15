@@ -36,3 +36,9 @@ def logout():
     """Logs out the user by clearing the session."""
     session.pop('user_id', None)  # Remove user_id from session
     return jsonify({"message": "Logged out successfully"}), 200
+
+@login_bp.route('/check-auth', methods=['GET'])
+def check_auth():
+    if 'user_id' in session:
+        return jsonify({"authenticated": True}), 200
+    return jsonify({"authenticated": False}), 200
