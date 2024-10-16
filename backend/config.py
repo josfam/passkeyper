@@ -8,15 +8,17 @@ load_dotenv()
 
 class Config:
     """Base Config Class"""
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI_STRING")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    CLIENT_ADDRESS = os.getenv("CLIENT_ADDRESS")
     SESSION_PERMANENT = True
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    CLIENT_ADDRESS = os.getenv("CLIENT_ADDRESS")
+    CLIENT_ID = os.getenv('CLIENT_ID')
+    CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI_STRING")
     DEBUG = True
 
 
