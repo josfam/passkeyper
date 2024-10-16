@@ -46,11 +46,12 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div id='app-container' className='flex w-full flex-col md:flex-row'>
+      <div id='app-container' className='flex flex-col h-screen overflow-hidden md:flex-row'>
         {isAuthenticated && (
 			<div>
 				{/* Hamburger button for small screens */}
-				<div className='z-30 w-7 h-auto p-4 md:hidden flex min-w-full bg-slate-200'>
+				<div className='z-30 h-16 p-4 flex w-full bg-slate-200 fixed
+					md:hidden'>
 					<HamburgerBtn setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen}/>
 				</div>
 				{/* Backdrop */}
@@ -64,7 +65,7 @@ const App: React.FC = () => {
 				<Sidebar isOpen={isSidebarOpen} />
 			</div>
 		)}
-        <div id='content-area' className='bg-white min-h-screen flex flex-col'>
+        <div id='content-area' className='bg-white min-h-screen flex-1 flex-col overflow-y-scroll'>
           <Routes>
             <Route path='/login' element={<Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path='/signup' element={<Signup />} />
