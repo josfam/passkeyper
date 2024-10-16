@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { faBars } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import Sidebar from './components/Sidebar';
 import Passwords from './pages/Passwords';
@@ -11,12 +12,15 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import './styles/App.css';
 import './styles/base.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // For toggling the sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,9 +47,22 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div id='app-container' className='inline-flex w-full'>
-        {isAuthenticated && <Sidebar />}
-        <div id='content-area' className='bg-white'>
+      <div id='app-container' className='flex w-full flex-col md:flex-row'>
+        {isAuthenticated && (
+			<>
+				{/* Hamburger button for small screens */}
+				<button
+					onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+					className='p-4 md:hidden flex min-w-full bg-slate-200'
+					>
+					<FontAwesomeIcon icon={ faBars } className='w-6'/>
+					{/* Hamburger Icon */}
+				</button>
+				{/* Sidebar */}
+				<Sidebar isOpen={isSidebarOpen} />
+			</>
+		)}
+        <div id='content-area' className='bg-white min-h-screen flex flex-col'>
           <Routes>
             <Route path='/login' element={<Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path='/signup' element={<Signup />} />
