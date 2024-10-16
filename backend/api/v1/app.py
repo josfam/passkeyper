@@ -7,9 +7,6 @@ from flask import Flask, jsonify, session, request
 from flask_cors import CORS
 from . import v1_bp
 
-load_dotenv()
-
-CLIENT_ADDRESS = os.getenv("CLIENT_ADDRESS")
 
 def check_session():
     """Check if user is logged in before accessing certain routes."""
@@ -33,7 +30,7 @@ def create_app(config_class=DevelopmentConfig):
     # Initialize the database, migrate, cors and bcrypt
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app, resources={r"/*": {"origins": CLIENT_ADDRESS, "supports_credentials": True}})
+    cors.init_app(app, resources={r"/*": {"origins": app.config['CLIENT_ADDRESS'], "supports_credentials": True}})
     bcrypt.init_app(app)
 
     # Register the v1 API blueprint
