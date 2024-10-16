@@ -18,6 +18,11 @@ class Auth:
             if user:
                 raise ValueError(f"User {email} already exists")
 
+            # Check if the user already exists by username
+            user = User.query.filter_by(username=username).first()
+            if user:
+                raise ValueError(f"User {username} already exists")
+
             # Hash the password using Flask-Bcrypt
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
