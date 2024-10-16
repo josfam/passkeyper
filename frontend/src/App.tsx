@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import Sidebar from './components/Sidebar';
 import Passwords from './pages/Passwords';
@@ -12,7 +11,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import './styles/App.css';
 import './styles/base.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import HamburgerBtn from './components/buttons/HamburgerBtn';
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
@@ -49,18 +48,21 @@ const App: React.FC = () => {
     <Router>
       <div id='app-container' className='flex w-full flex-col md:flex-row'>
         {isAuthenticated && (
-			<>
+			<div>
 				{/* Hamburger button for small screens */}
-				<button
-					onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-					className='p-4 md:hidden flex min-w-full bg-slate-200'
-					>
-					<FontAwesomeIcon icon={ faBars } className='w-6'/>
-					{/* Hamburger Icon */}
-				</button>
+				<div className='z-30 w-7 h-auto p-4 md:hidden flex min-w-full bg-slate-200'>
+					<HamburgerBtn setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen}/>
+				</div>
+				{/* Backdrop */}
+				{isSidebarOpen && (
+					<div
+						className='fixed inset-0 bg-black bg-opacity-50 z-20'
+						onClick={() => setIsSidebarOpen(false)} // Close sidebar on backdrop click
+					/>
+				)}
 				{/* Sidebar */}
 				<Sidebar isOpen={isSidebarOpen} />
-			</>
+			</div>
 		)}
         <div id='content-area' className='bg-white min-h-screen flex flex-col'>
           <Routes>

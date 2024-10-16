@@ -11,10 +11,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 	return (
-		<div className={`min-w-64 ${isOpen ? 'flex' : 'hidden'}
-		absolute inline-block
+		<div className={`z-30 min-w-64 ${isOpen ? 'flex' : 'hidden'}
+		absolute inline-block 
 		md:block md:relative`}>
-			<ul className='min-h-screen bg-slate-200 p-0 m-0 text-center
+			<ul className='min-h-screen flex bg-slate-200 p-0 m-0 text-center
 			md:flex flex-col md:min-h-screen'
 			>
 				<div>
