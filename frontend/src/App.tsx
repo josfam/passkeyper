@@ -11,12 +11,15 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import './styles/App.css';
 import './styles/base.css';
+import HamburgerBtn from './components/buttons/HamburgerBtn';
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // For toggling the sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,9 +46,25 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div id='app-container' className='inline-flex w-full'>
-        {isAuthenticated && <Sidebar />}
-        <div id='content-area' className='bg-white'>
+      <div id='app-container' className='flex w-full flex-col md:flex-row'>
+        {isAuthenticated && (
+			<div>
+				{/* Hamburger button for small screens */}
+				<div className='z-30 w-7 h-auto p-4 md:hidden flex min-w-full bg-slate-200'>
+					<HamburgerBtn setIsSidebarOpen={setIsSidebarOpen} isSidebarOpen={isSidebarOpen}/>
+				</div>
+				{/* Backdrop */}
+				{isSidebarOpen && (
+					<div
+						className='fixed inset-0 bg-black bg-opacity-50 z-20'
+						onClick={() => setIsSidebarOpen(false)} // Close sidebar on backdrop click
+					/>
+				)}
+				{/* Sidebar */}
+				<Sidebar isOpen={isSidebarOpen} />
+			</div>
+		)}
+        <div id='content-area' className='bg-white min-h-screen flex flex-col'>
           <Routes>
             <Route path='/login' element={<Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path='/signup' element={<Signup />} />
