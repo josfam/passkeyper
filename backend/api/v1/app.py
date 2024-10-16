@@ -2,7 +2,7 @@
 import os
 from dotenv import load_dotenv
 from backend.config import DevelopmentConfig
-from backend.models import db, migrate, cors, bcrypt
+from backend.models import db, migrate, cors, bcrypt, oauth
 from flask import Flask, jsonify, session, request
 from flask_cors import CORS
 from . import v1_bp
@@ -27,11 +27,12 @@ def create_app(config_class=DevelopmentConfig):
     # Apply configuration from config.py
     app.config.from_object(config_class)
 
-    # Initialize the database, migrate, cors and bcrypt
+    # Initialize the database, migrate, cors, bcrypt & oauth
     db.init_app(app)
     migrate.init_app(app, db)
     cors.init_app(app, resources={r"/*": {"origins": app.config['CLIENT_ADDRESS'], "supports_credentials": True}})
     bcrypt.init_app(app)
+    oauth.init_app(app)
 
     # Register the v1 API blueprint
     app.register_blueprint(v1_bp)
