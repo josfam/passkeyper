@@ -7,7 +7,7 @@ from flask import request, session, jsonify
 def check_session():
     """Check if user is logged in before accessing certain routes."""
     # List public routes that don't require authentication
-    public_routes = ["/", "/login", "/signup", "/login/google", "/authorize/google", "/check-auth"]
+    public_routes = ["/", "/login", "/signup", "/favicon.ico", "/check-auth", "/login/google", "/authorize/google"]
 
     # Allow access to public routes or if user is logged in
     if request.path in public_routes or "user_id" in session:
