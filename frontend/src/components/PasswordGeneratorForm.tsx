@@ -1,8 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { Flip, toast } from 'react-toastify'
 import { Input } from '../components/ui/input'
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useState , useEffect, useCallback} from 'react'
 import {
 	Form,
 	FormField,
@@ -10,10 +9,12 @@ import {
 	FormLabel,
 	FormControl,
 } from '../components/ui/form'
+import {
+	MIN_PASSWORD_LEN,
+	MAX_PASSWORD_LEN,} from '../utils/passwords/Constants'
+import generatePassword from '../utils/passwords/GeneratePassword'
 
-const PasswordGeneratorForm = () => {	
-	const MIN_PASSWORD_LEN = 10
-	const MAX_PASSWORD_LEN = 64
+const PasswordGeneratorForm = () => {
 	// initial state, and functions to change state
 	const [passwordType, setPasswordType] = useState('password')
 	const [hasSpecialChars, setHasSpecialChars] = useState(true)
@@ -83,47 +84,26 @@ const PasswordGeneratorForm = () => {
 			console.log(err);
 		})	
 	}
-	// Character sets for password generation
-	const specialChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-	const numbers = '0123456789';
-	const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	const lowercase = 'abcdefghijklmnopqrstuvwxyz';
 
-	const generatePassword = (passwordLength: number) => {
+	// Memoize the reference to getPassword, unless one of its dependencies changes
+	const getPassword = useCallback((passwordLength: number) => {
 		if (passwordLength < MIN_PASSWORD_LEN || passwordLength > MAX_PASSWORD_LEN) {
 			setIsBadLength(true)
 			return
 		}
-
 		setIsBadLength(false)
-		const getRandomInt = (min: number, max: number) => {
-			// secure, non-deterministic random number generation
-			return Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (0xFFFFFFFF + 1) * (max - min + 1)) + min;
-		}
-
-		let possibleChars = ''
-		let generatedPassword = ''
-
-		// check the lowercase option by default if none are selected
 		if (!hasSpecialChars && !hasUppercase && !hasLowercase && !hasNumbers) {
 			setHasLowercase(true)
 		}
-		if (hasSpecialChars) possibleChars += specialChars
-		if (hasUppercase) possibleChars += uppercase
-		if (hasLowercase) possibleChars += lowercase
-		if (hasNumbers) possibleChars += numbers
-
-		for (let i = 0; i < passwordLength; i++) {
-			const randomIndex = getRandomInt(0, possibleChars.length - 1) // 0 - last index of possibleChars
-			generatedPassword += possibleChars[randomIndex]
-		}
+		const generatedPassword = generatePassword({ passwordLength, hasSpecialChars, hasUppercase, hasLowercase, hasNumbers });
 		setPassword(generatedPassword)
-	}
+	}, [hasSpecialChars, hasNumbers, hasUppercase, hasLowercase]);
 
-	// Generate a password every time any of the checkboxes change
+	// Call get password if password length changes, or if getPassword changed (because one of its
+	// dependencies changed) The useCallback was mostly a work around for eslint errors
 	useEffect(() => {
-		generatePassword(passwordLength);
-	}, [hasSpecialChars, hasNumbers, hasUppercase, hasLowercase, passwordLength]);
+		getPassword(passwordLength);
+	}, [getPassword, passwordLength]);
 
 	return (
 		<div id='form-container' className='p-10 w-3/4 rounded-lg flex flex-col justify-center gap-6
@@ -230,7 +210,7 @@ const PasswordGeneratorForm = () => {
 					<button
 						// variant='secondary'
 						className='btn-primary btn-secondary sm:max-lg:mb-5'
-						onClick={() => generatePassword(passwordLength)}>
+						onClick={() => getPassword(passwordLength)}>
 							Regenerate
 					</button>
 					<button
