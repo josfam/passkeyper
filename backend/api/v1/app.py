@@ -12,6 +12,8 @@ def create_app(config_class=DevelopmentConfig):
 
     # Apply configuration from config.py
     app.config.from_object(config_class)
+    app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Use 'Lax' if you only need first-party cookies
+    app.config['SESSION_COOKIE_SECURE'] = True
 
     # Initialize the database, migrate, cors, bcrypt & oauth
     db.init_app(app)
