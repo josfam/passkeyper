@@ -1,24 +1,10 @@
 #!/usr/bin/python3
-import os
-from dotenv import load_dotenv
 from backend.config import DevelopmentConfig
 from backend.models import db, migrate, cors, bcrypt, oauth
-from flask import Flask, jsonify, session, request
+from flask import Flask, jsonify
 from flask_cors import CORS
+from backend.utils.helpers import check_session, register_google_oauth
 from . import v1_bp
-
-
-def check_session():
-    """Check if user is logged in before accessing certain routes."""
-    # List public routes that don't require authentication
-    public_routes = ["/", "/login", "/signup"]
-
-    # Allow access to public routes or if user is logged in
-    if request.path in public_routes or "user_id" in session:
-        return None
-
-    # Block access if user is not authenticated
-    return jsonify({"error": "Unauthorized"}), 401
 
 
 def create_app(config_class=DevelopmentConfig):
@@ -33,6 +19,9 @@ def create_app(config_class=DevelopmentConfig):
     cors.init_app(app, resources={r"/*": {"origins": app.config['CLIENT_ADDRESS'], "supports_credentials": True}})
     bcrypt.init_app(app)
     oauth.init_app(app)
+
+    # Register Google OAuth provider
+    register_google_oauth(app)
 
     # Register the v1 API blueprint
     app.register_blueprint(v1_bp)
