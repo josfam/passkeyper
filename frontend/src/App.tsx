@@ -44,6 +44,11 @@ const App: React.FC = () => {
     return isAuthenticated ? element : <Navigate to="/login" replace />;
   };
 
+  // check if page requires a top margin to compensate for top header height in mobile
+  const shouldNotHaveTopOffset = (): boolean => {
+	return location.pathname === '/login' || location.pathname === '/signup';
+  }
+
   return (
     <Router>
       <div id='app-container' className='flex flex-col h-screen overflow-hidden md:flex-row'>
@@ -65,7 +70,8 @@ const App: React.FC = () => {
 				<Sidebar isOpen={isSidebarOpen} />
 			</div>
 		)}
-        <div id='content-area' className='bg-white min-h-screen flex-1 flex-col overflow-y-scroll'>
+        <div id='content-area' className={`bg-white min-h-screen flex-1 flex-col overflow-y-scroll
+			${shouldNotHaveTopOffset() ? 'mt-0': 'mt-16'}`}>
           <Routes>
             <Route path='/login' element={<Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path='/signup' element={<Signup />} />
