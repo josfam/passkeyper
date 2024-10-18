@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { faKey, faTrash, faRightFromBracket, faGear } from '@fortawesome/free-solid-svg-icons';
 
 import ToolsDropDown from './ToolsDropdown';
@@ -10,6 +10,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+	// Get the current location on the page for conditional highlighting of buttons that match the page
+	const currentPage = useLocation().pathname
+
 	return (
 		<div id='sidebar-container' className={` z-30 h-full min-w-64 ${isOpen ? 'flex' : 'hidden'} overflow-y-auto
 		absolute inline-block 
@@ -18,13 +21,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 			md:flex flex-col md:min-h-screen'
 			>
 				<div>
-					<li><Link to='/passwords'><SidebarBtn buttonIcon={faKey} buttonLabel='Passwords'/></Link></li>
+					<li><Link to='/passwords'><SidebarBtn pageIsInView={currentPage === '/passwords'}
+					buttonIcon={faKey} buttonLabel='Passwords'/></Link></li>
 					<li><ToolsDropDown/></li>
-					<li><Link to='/trash'><SidebarBtn buttonIcon={faTrash} buttonLabel='Trash'/></Link></li>
+					<li><Link to='/trash'><SidebarBtn pageIsInView={currentPage === '/trash'}
+					buttonIcon={faTrash} buttonLabel='Trash'/></Link></li>
 				</div>
 				<div className='mt-auto'>
-					<li><Link to='/settings'><SidebarBtn buttonIcon={faGear} buttonLabel='Settings'/></Link></li>
-					<li><Link to='/logout'><SidebarBtn buttonIcon={faRightFromBracket} buttonLabel='Logout'/></Link></li>
+					<li><Link to='/settings'><SidebarBtn pageIsInView={currentPage === '/settings'}
+					buttonIcon={faGear} buttonLabel='Settings'/></Link></li>
+					<li><Link to='/logout'><SidebarBtn pageIsInView={currentPage === '/logout'}
+					buttonIcon={faRightFromBracket} buttonLabel='Logout'/></Link></li>
 				</div>
 			</ul>
 		</div>

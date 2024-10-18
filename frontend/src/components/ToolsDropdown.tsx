@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation} from 'react-router-dom';
 import {
 	DropdownMenu,
 	DropdownMenuTrigger,
@@ -12,19 +12,23 @@ import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import '../styles/base.css'
 
 const ToolsDropDown = () => {
+	// Get the current location on the page for conditional highlighting of buttons that match the page
+	const currentPage = useLocation().pathname
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<SidebarBtn buttonIcon={faWrench} buttonLabel='Tools'/>
+				<SidebarBtn pageIsInView={currentPage === ''} buttonIcon={faWrench} buttonLabel='Tools'/>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className='w-60 p-0'>
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
-						<Link to='/generator' className='dropdown-item'
-						>Password generator</Link>
+					<DropdownMenuItem className='px-0 py-0'>
+						<Link to='/generator' className={`dropdown-item
+							${currentPage === '/generator' ? 'bg-slate-500 text-slate-50' : ''} `}>Password generator</Link>
 					</DropdownMenuItem>
-					<DropdownMenuItem>
-						<Link to='/import-export' className='dropdown-item'>Import / Export</Link>
+					<DropdownMenuItem className='px-0 py-0'>
+						<Link to='/import-export' className={`dropdown-item
+							${currentPage === '/import-export' ? 'bg-slate-500 text-slate-50' : ''}`}>Import / Export</Link>
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>
