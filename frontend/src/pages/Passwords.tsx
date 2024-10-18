@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "../components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { Lock, MoreHorizontal } from "lucide-react";
+import axios from 'axios';
 
 interface PasswordEntry {
   id: number;
@@ -26,17 +27,24 @@ const PasswordDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPassword, setEditingPassword] = useState<PasswordEntry | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
 
   useEffect(() => {
-    // TODO: Replace with actual data fetch from API
     const fetchPasswords = async () => {
-      const mockPasswords: PasswordEntry[] = [
-        { id: 1, user_id: 1, name: 'Google', username: 'user@example.com', password: 'password123', url: 'https://google.com', notes: 'My Google account', in_trash: false, created_at: '2024-03-15T00:00:00Z', updated_at: '2024-03-15T00:00:00Z', moved_at: null },
-        { id: 2, user_id: 1, name: 'GitHub', username: 'devuser', password: 'securepass456', url: 'https://github.com', notes: 'Work GitHub account', in_trash: false, created_at: '2024-03-16T00:00:00Z', updated_at: '2024-03-16T00:00:00Z', moved_at: null },
-        { id: 3, user_id: 1, name: 'Dropbox', username: 'dropuser', password: 'dropbox789', url: 'https://dropbox.com', notes: 'Personal Dropbox', in_trash: false, created_at: '2024-03-17T00:00:00Z', updated_at: '2024-03-17T00:00:00Z', moved_at: null },
-      ];
-      setPasswords(mockPasswords);
+      setLoading(true);
+      try {
+        const response = await axios.get('http://127.0.0.1:5000/passwords', { withCredentials: true });
+        setPasswords(response.data.passwords);
+      } catch (err) {
+        setError('Failed to fetch password data');
+        console.error('Error fetching passwords:', err);
+      } finally {
+        setLoading(false);
+      }
     };
+    
     fetchPasswords();
   }, []);
 
