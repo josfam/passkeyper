@@ -7,7 +7,9 @@
 	text-xl
 	p-4
 	w-full
-	hover:font-medium
+	decoration-1
+	underline-offset-8
+	hover:underline
 	;
 }
 
