@@ -71,7 +71,7 @@ const App: React.FC = () => {
 			</div>
 		)}
         <div id='content-area' className={`bg-white min-h-screen flex-1 flex-col overflow-y-scroll
-			${shouldNotHaveTopOffset() ? 'mt-0': 'mt-16'}`}>
+			${shouldNotHaveTopOffset() ? 'mt-0': 'mt-16 md:mt-0'}`}>
           <Routes>
             <Route path='/login' element={<Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path='/signup' element={<Signup />} />
