@@ -18,7 +18,9 @@ const ToolsDropDown = () => {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<SidebarBtn pageIsInView={currentPage === ''} buttonIcon={faWrench} buttonLabel='Tools'/>
+				<SidebarBtn
+				pageIsInView={currentPage === '/generator'  || currentPage === '/import-export'}
+				buttonIcon={faWrench} buttonLabel='Tools'/>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className='w-60 p-0'>
 				<DropdownMenuGroup>
