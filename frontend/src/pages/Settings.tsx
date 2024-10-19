@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import PasswordChangeModal from "./PasswordChangeModal.tsx";
 import { FaTrash, FaUser, FaEnvelope, FaKey } from "react-icons/fa";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Settings = () => {
   const [userData, setUserData] = useState({ name: "", email: "" });
@@ -33,10 +35,29 @@ const Settings = () => {
     fetchUserData();
   }, []);
 
-  const handleDeleteAccount = () => {
-    alert("Account deleted successfully!");
-    setShowDeleteConfirmation(false);
-  };
+  const handleDeleteAccount = async () => {
+    try {
+      // Send a DELETE request to delete the user account
+      await axios.delete("http://127.0.0.1:5000/user", {
+        withCredentials: true,
+      });
+  
+      // Show success message before redirection
+    toast.success("Account deleted successfully!");
+
+      // Wait for a second to allow the toast to show, then redirect
+    setTimeout(() => {
+      // Redirect the user to the signup page
+      window.location.href = "/signup";
+    }, 1000); // 1 second delay
+  } catch (err: any) {
+    setError(
+      err.response?.data?.message ||
+      err.message ||
+      "An error occurred while deleting the account."
+    );
+  }
+};
 
   const handleEditUserData = async () => {
     try {
@@ -218,6 +239,9 @@ const Settings = () => {
           </div>
         </div>
       )}
+      <div className="flex p-6 flex-col h-screen max-w-lg">
+    </div>
+      <ToastContainer /> {/* Toast notifications container */}
     </div>
   );
 };
