@@ -24,25 +24,34 @@ const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  // For toggling the sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/check-auth`, {
-          withCredentials: true,
-        });
-        setIsAuthenticated(response.data.authenticated);
-      } catch {
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/check-auth`, {
+        withCredentials: true,
+      });
+      setIsAuthenticated(response.data.authenticated);
+    } catch {
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
+      setIsAuthenticated(false);
+      window.location.href = '/login';
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -58,7 +67,6 @@ const App: React.FC = () => {
     return isAuthenticated ? element : <Navigate to="/login" replace />;
   };
 
-  // check if page requires a top margin to compensate for top header height in mobile
   const shouldNotHaveTopOffset = (): boolean => {
     return location.pathname === "/login" || location.pathname === "/signup";
   };
@@ -71,31 +79,28 @@ const App: React.FC = () => {
       >
         {isAuthenticated && (
           <div>
-            {/* Hamburger button for small screens */}
             <div
               className="z-30 h-16 p-4 flex w-full bg-slate-200 fixed
-					md:hidden"
+                md:hidden"
             >
               <HamburgerBtn
                 setIsSidebarOpen={setIsSidebarOpen}
                 isSidebarOpen={isSidebarOpen}
               />
             </div>
-            {/* Backdrop */}
             {isSidebarOpen && (
               <div
                 className="fixed inset-0 bg-black bg-opacity-50 z-20"
-                onClick={() => setIsSidebarOpen(false)} // Close sidebar on backdrop click
+                onClick={() => setIsSidebarOpen(false)}
               />
             )}
-            {/* Sidebar */}
-            <Sidebar isOpen={isSidebarOpen} />
+            <Sidebar isOpen={isSidebarOpen} onLogout={handleLogout} />
           </div>
         )}
         <div
           id="content-area"
           className={`bg-white min-h-screen flex-1 flex-col overflow-y-scroll
-			${shouldNotHaveTopOffset() ? "mt-0" : "mt-16 md:mt-0"}`}
+            ${shouldNotHaveTopOffset() ? "mt-0" : "mt-16 md:mt-0"}`}
         >
           <Routes>
             <Route
