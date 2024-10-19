@@ -8,7 +8,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false); // State for edit modal
+  const [editMode, setEditMode] = useState<null | "name" | "email">(null); // New state for tracking edit mode
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -47,7 +47,7 @@ const Settings = () => {
         { withCredentials: true }
       );
       setUserData({ name: newName, email: newEmail });
-      setShowEditModal(false);
+      setEditMode(null); // Close modal after saving changes
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -78,10 +78,10 @@ const Settings = () => {
             {userData.name}
           </p>
           <button
-            className="text-blue-600 underline mt-1"
+            className="text-blue-600 underline mt-1 mb-4"
             onClick={() => {
-              setNewName(userData.name);
-              setShowEditModal(true);
+              setNewName(userData.name); // Set current name for editing
+              setEditMode("name"); // Open name edit modal
             }}
           >
             Edit
@@ -100,8 +100,8 @@ const Settings = () => {
           <button
             className="text-blue-600 underline mt-1"
             onClick={() => {
-              setNewEmail(userData.email);
-              setShowEditModal(true);
+              setNewEmail(userData.email); // Set current email for editing
+              setEditMode("email"); // Open email edit modal
             }}
           >
             Edit
@@ -166,32 +166,43 @@ const Settings = () => {
       )}
 
       {/* Edit User Data Modal */}
-      {showEditModal && (
+      {editMode && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-80">
-            <h2 className="text-lg font-bold mb-4">Edit User Data</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Name
-              </label>
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="border border-gray-300 rounded-lg p-2 w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                className="border border-gray-300 rounded-lg p-2 w-full"
-              />
-            </div>
+            <h2 className="text-lg font-bold mb-4">
+              {editMode === "name" ? "Edit Name" : "Edit Email"}
+            </h2>
+
+            {/* Name Edit Form */}
+            {editMode === "name" && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="border border-gray-300 rounded-lg p-2 w-full"
+                />
+              </div>
+            )}
+
+            {/* Email Edit Form */}
+            {editMode === "email" && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="border border-gray-300 rounded-lg p-2 w-full"
+                />
+              </div>
+            )}
+
             <div className="flex justify-between">
               <button
                 onClick={handleEditUserData}
@@ -200,7 +211,7 @@ const Settings = () => {
                 Save
               </button>
               <button
-                onClick={() => setShowEditModal(false)}
+                onClick={() => setEditMode(null)}
                 className="text-blue-600 underline"
               >
                 Cancel
