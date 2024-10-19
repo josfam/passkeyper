@@ -4,6 +4,7 @@
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from authlib.integrations.flask_client import OAuth
 
@@ -13,7 +14,7 @@ bcrypt = Bcrypt()
 cors = CORS()
 migrate = Migrate()
 oauth = OAuth()
-
+sess = Session()
 
 from .user import User
 from .password import PasswordEntry

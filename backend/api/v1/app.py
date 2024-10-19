@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from backend.config import DevelopmentConfig
-from backend.models import db, migrate, cors, bcrypt, oauth
+from backend.models import db, migrate, cors, bcrypt, oauth, sess
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from backend.utils.helpers import check_session, register_google_oauth
@@ -12,15 +12,17 @@ def create_app(config_class=DevelopmentConfig):
 
     # Apply configuration from config.py
     app.config.from_object(config_class)
-    app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Use 'Lax' if you only need first-party cookies
-    app.config['SESSION_COOKIE_SECURE'] = True # change to false to allow http reqs via postman
 
     # Initialize the database, migrate, cors, bcrypt & oauth
     db.init_app(app)
     migrate.init_app(app, db)
+    bcrypt.init_app(app)
+    oauth.init_app(app)
+    sess.init_app(app)
     cors.init_app(app, resources={
         r"/*": {
-            "origins": app.config['CLIENT_ADDRESS'],"methods": ["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
+            "origins": app.config['CLIENT_ADDRESS'],
+            "methods": ["GET", "HEAD","POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
             "supports_credentials": True
             # "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
             # "expose_headers": ["Content-Type", "X-CSRFToken"],
@@ -28,8 +30,6 @@ def create_app(config_class=DevelopmentConfig):
             # "send_wildcard": False
         }
     })
-    bcrypt.init_app(app)
-    oauth.init_app(app)
 
     # Register Google OAuth provider
     register_google_oauth(app)
