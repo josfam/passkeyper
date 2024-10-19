@@ -66,8 +66,8 @@ const Settings = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="flex flex-col h-screen max-w-lg">
-      <h1 className="text-4xl font-bold mb-6">My Account</h1>
+    <div className="flex p-6 flex-col h-screen max-w-lg">
+      <h1 className="text-3xl font-bold mb-6">My Account</h1>
 
       {/* NAME */}
       <div className="mb-2 flex items-center">
