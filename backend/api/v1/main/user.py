@@ -41,3 +41,24 @@ def update_user():
         return jsonify({"message": "User updated successfully"}), 200
     else:
         return jsonify({"error": "User not found"}), 404
+
+@user_bp.route('/user', methods=["DELETE"], strict_slashes=False)
+def delete_user():
+    '''delete a user from daabase'''
+    user_id = session.get('user_id')
+
+    user = User.query.filter_by(id=user_id).first()
+
+    if user:
+        try:
+            db.session.delete(user)
+            db.session.commit()
+            return jsonify({"message":
+                            "User deleted successfully"}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error":
+                            "An error occurred while deleting the user"
+                            }), 500
+    else:
+        return jsonify({"error": "User not found"}), 404
