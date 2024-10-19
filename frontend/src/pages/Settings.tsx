@@ -171,7 +171,7 @@ const Settings = () => {
                 onClick={handleDeleteAccount}
                 className="bg-red-600 text-white rounded-lg py-2 px-4 hover:bg-red-700"
               >
-                Yes, Delete
+                Yes, Delete ')
               </button>
               <button
                 onClick={() => setShowDeleteConfirmation(false)}
