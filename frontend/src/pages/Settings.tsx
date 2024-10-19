@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import PasswordChangeModal from "./PasswordChangeModal.tsx";
+// import PasswordChangeModal from "./PasswordChangeModal.tsx";
 import { FaTrash, FaUser, FaEnvelope, FaKey } from "react-icons/fa";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,7 +9,7 @@ const Settings = () => {
   const [userData, setUserData] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState<null | "name" | "email">(null); // New state for tracking edit mode
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -23,15 +23,18 @@ const Settings = () => {
         });
         setUserData({ name: response.data.name, email: response.data.email });
       } catch (err: any) {
-        setError(
-          err.response?.data?.message ||
-            err.message ||
-            "An error occurred while fetching user data"
-        );
+         // If there's an error, like 401 Unauthorized, redirect to login
+         if (err.response?.status === 401) {
+          // Redirect to login page if not authenticated
+          window.location.href = "/login";
+        } else {
+          setError(err.response?.data?.message || err.message || "An error occurred while fetching user data");
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchUserData();
   }, []);
 
@@ -49,7 +52,7 @@ const Settings = () => {
     setTimeout(() => {
       // Redirect the user to the signup page
       window.location.href = "/signup";
-    }, 1000); // 1 second delay
+    }, 2000); // 1 second delay
   } catch (err: any) {
     setError(
       err.response?.data?.message ||
@@ -128,7 +131,7 @@ const Settings = () => {
         </button>
     </div>
 
-      {/* Change Password Section */}
+      {/* Change Password Section
       <div
         className="text-blue-600 cursor-pointer mt-4 flex items-center"
         onClick={() => setShowModal(true)}
@@ -137,11 +140,11 @@ const Settings = () => {
         <span>Change Password</span>
       </div>
 
-      {/* Password Change Modal */}
+      {/* Password Change Modal
       <PasswordChangeModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-      />
+      />*/}
 
       {/* Delete Account Section */}
       <div className="flex items-center mt-6">
