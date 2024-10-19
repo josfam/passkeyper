@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { faKey, faTrash, faRightFromBracket, faGear } from '@fortawesome/free-solid-svg-icons';
+import { faKey, faTrash, faRightFromBracket, faGear, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 
 import ToolsDropDown from './ToolsDropdown';
 import SidebarBtn from './buttons/SidebarBtn';
@@ -24,6 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 					<li><Link to='/passwords'><SidebarBtn pageIsInView={currentPage === '/passwords'}
 					buttonIcon={faKey} buttonLabel='Passwords'/></Link></li>
 					<li><ToolsDropDown/></li>
+					<li><Link to='/dashboard'><SidebarBtn pageIsInView={currentPage === '/dashboard'}
+					buttonIcon={faShieldHalved} buttonLabel='Dashboard'/></Link></li>
 					<li><Link to='/trash'><SidebarBtn pageIsInView={currentPage === '/trash'}
 					buttonIcon={faTrash} buttonLabel='Trash'/></Link></li>
 				</div>
