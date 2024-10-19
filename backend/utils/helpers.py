@@ -7,7 +7,7 @@ from flask import request, session, jsonify
 def check_session():
     """Check if user is logged in before accessing certain routes."""
     # List public routes that don't require authentication
-    public_routes = ["/", "/login", "/signup", "/favicon.ico", "/check-auth", "/login/google", "/authorize/google"]
+    public_routes = ["/", "/login", "/signup", "/favicon.ico", "/check-auth", "/google", "/callback"]
 
     # Allow access to public routes or if user is logged in
     if request.path in public_routes or "user_id" in session:
@@ -19,10 +19,13 @@ def check_session():
 
 def register_google_oauth(app):
     """Register Google OAuth provider."""
-    oauth.register(
-        name='google',
-        client_id=app.config['CLIENT_ID'],
-        client_secret=app.config['CLIENT_SECRET'],
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-        client_kwargs={'scope': 'openid profile email'}
-    )
+    try:
+        oauth.register(
+            name='google',
+            client_id=app.config['CLIENT_ID'],
+            client_secret=app.config['CLIENT_SECRET'],
+            server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+            client_kwargs={'scope': 'openid profile email'}
+        )
+    except KeyError as e:
+        print(f"Missing OAuth configuration for {str(e)}")
