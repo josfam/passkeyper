@@ -70,44 +70,42 @@ const Settings = () => {
       <h1 className="text-3xl font-bold mb-6">My Account</h1>
 
       {/* NAME */}
-      <div className="mb-2 flex items-center">
-        <FaUser className="mr-2" />
-        <div>
-          <p className="text-sm font-medium text-gray-500">Name</p>
-          <p className="text-xl rounded-lg bg-gray-50 font-semibold">
-            {userData.name}
-          </p>
-          <button
-            className="text-blue-600 underline mt-1 mb-4"
-            onClick={() => {
-              setNewName(userData.name); // Set current name for editing
-              setEditMode("name"); // Open name edit modal
-            }}
-          >
-            Edit
-          </button>
-        </div>
-      </div>
+      <div className="mb-2">
+        <p className="text-sm font-medium text-gray-500 flex items-center">
+          <FaUser className="mr-2" /> Name
+        </p>
+        <p className="text-xl rounded-lg bg-gray-50 font-semibold">
+          {userData.name}
+        </p>
+        <button
+          className="text-blue-600 underline mt-1 mb-4"
+          onClick={() => {
+            setNewName(userData.name); // Set current name for editing
+            setEditMode("name"); // Open name edit modal
+          }}
+        >
+          Edit
+        </button>
+    </div>
 
       {/* EMAIL */}
-      <div className="mb-4 flex items-center">
-        <FaEnvelope className="mr-2" />
-        <div>
-          <p className="text-sm font-medium text-gray-500">Email</p>
-          <p className="text-xl rounded-lg bg-gray-50 font-semibold">
-            {userData.email}
-          </p>
-          <button
-            className="text-blue-600 underline mt-1"
-            onClick={() => {
-              setNewEmail(userData.email); // Set current email for editing
-              setEditMode("email"); // Open email edit modal
-            }}
-          >
-            Edit
-          </button>
-        </div>
-      </div>
+      <div className="mb-4">
+        <p className="text-sm font-medium text-gray-500 flex items-center">
+          <FaEnvelope className="mr-2" /> Email
+        </p>
+        <p className="text-xl rounded-lg bg-gray-50 font-semibold">
+          {userData.email}
+        </p>
+        <button
+          className="text-blue-600 underline mt-1"
+          onClick={() => {
+            setNewEmail(userData.email); // Set current email for editing
+            setEditMode("email"); // Open email edit modal
+          }}
+        >
+          Edit
+        </button>
+    </div>
 
       {/* Change Password Section */}
       <div
