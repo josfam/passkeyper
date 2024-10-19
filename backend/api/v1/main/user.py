@@ -1,6 +1,8 @@
 #!/usr/bin/python3
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, jsonify, session, request
 from backend.models.user import User
+from sqlalchemy import func
+from backend.models import db
 
 user_bp = Blueprint('user', __name__)
 
