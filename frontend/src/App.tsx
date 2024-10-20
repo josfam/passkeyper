@@ -4,6 +4,7 @@ import {
   Route,
   Routes,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "./components/Sidebar";
@@ -68,22 +69,16 @@ const App: React.FC = () => {
     return isAuthenticated ? element : <Navigate to="/login" replace />;
   };
 
-  const shouldNotHaveTopOffset = (): boolean => {
-    return location.pathname === "/login" || location.pathname === "/signup";
-  };
+  const AppContent: React.FC = () => {
+    const location = useLocation();
+    const hideOnPaths = ['/', '/login', '/signup'];
+    const shouldHideSidebar = hideOnPaths.includes(location.pathname);
 
-  return (
-    <Router>
-      <div
-        id="app-container"
-        className="flex flex-col h-screen overflow-hidden md:flex-row"
-      >
-        {isAuthenticated && (
+    return (
+      <div className="flex flex-col h-screen overflow-hidden md:flex-row">
+        {isAuthenticated && !shouldHideSidebar && (
           <div>
-            <div
-              className="z-30 h-16 p-4 flex w-full bg-slate-200 fixed
-                md:hidden"
-            >
+            <div className="z-30 h-16 p-4 flex w-full bg-slate-200 fixed md:hidden">
               <HamburgerBtn
                 setIsSidebarOpen={setIsSidebarOpen}
                 isSidebarOpen={isSidebarOpen}
@@ -101,7 +96,7 @@ const App: React.FC = () => {
         <div
           id="content-area"
           className={`bg-white min-h-screen flex-1 flex-col overflow-y-scroll
-            ${shouldNotHaveTopOffset() ? "mt-0" : "mt-16 md:mt-0"}`}
+            ${!shouldHideSidebar && !shouldHideTopOffset() ? "mt-16 md:mt-0" : "mt-0"}`}
         >
           <Routes>
             <Route
@@ -143,6 +138,16 @@ const App: React.FC = () => {
           </Routes>
         </div>
       </div>
+    );
+  };
+
+  const shouldHideTopOffset = (): boolean => {
+    return ["/login", "/signup", "/"].includes(location.pathname);
+  };
+
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 };
