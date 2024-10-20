@@ -15,9 +15,15 @@ oauth_bp = Blueprint('oauth', __name__)
 @oauth_bp.route('/google')
 def google_login():
     """Login with google account"""
-    redirect_url = url_for('.callback', _external=True)
-    session['state'] = oauth.google.authorize_redirect(redirect_uri)
-    return session['state']  # To verify if state is stored correctly
+    # Generate a nonce (a random string)
+    nonce = secrets.token_urlsafe(16)
+        
+    # Store nonce in session for later verification
+    session['nonce'] = nonce
+
+    # Redirect to Google for login and include the nonce
+    redirect_uri = url_for('.callback', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
 
 
 @oauth_bp.route('/callback')
@@ -25,7 +31,16 @@ def callback():
     """Redirect for google login"""
     try:
         token = oauth.google.authorize_access_token()  # Fetch the token
-        user_info = oauth.google.parse_id_token(token)  # Parse user info
+    
+        # Retrieve the nonce from the session
+        nonce = session.get('nonce')
+
+        # Ensure that nonce is present (required for validation)
+        if not nonce:
+            return jsonify({"error": "Nonce not found in session"}), 400
+
+        # Parse the ID token with the nonce for validation
+        user_info = oauth.google.parse_id_token(token, nonce=nonce)  # Pass nonce
 
         # Extract email (and potentially other information like name)
         email = user_info.get('email')
@@ -57,5 +72,5 @@ def callback():
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
     except Exception as e:
-        print("Exception occurred:", traceback.format_exc())
+        # print("Exception occurred:", traceback.format_exc())
         return jsonify({"error": "An error occurred during the authorization process"}), 500
