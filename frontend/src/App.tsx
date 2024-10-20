@@ -17,6 +17,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import SecurityDashboard from './pages/Dashboard';
 import LandingPage from "./pages/LandingPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import ServerErrorPage from "./pages/ServerErrorPage";
 import "./styles/App.css";
 import "./styles/base.css";
 import HamburgerBtn from "./components/buttons/HamburgerBtn";
@@ -27,6 +29,7 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [error, setError] = useState<number | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -38,7 +41,12 @@ const App: React.FC = () => {
         withCredentials: true,
       });
       setIsAuthenticated(response.data.authenticated);
-    } catch {
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setError(error.response.status);
+      } else {
+        setError(500);
+      }
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
@@ -52,6 +60,11 @@ const App: React.FC = () => {
       window.location.href = '/login';
     } catch (error) {
       console.error("Logout failed:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        setError(error.response.status);
+      } else {
+        setError(500);
+      }
     }
   };
 
@@ -61,6 +74,14 @@ const App: React.FC = () => {
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  if (error === 404) {
+    return <NotFoundPage />;
+  }
+
+  if (error === 500) {
+    return <ServerErrorPage />;
   }
 
   const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({
@@ -126,15 +147,7 @@ const App: React.FC = () => {
             />
             <Route path="/" element={<LandingPage />} />
             <Route path='/dashboard' element={<ProtectedRoute element={<SecurityDashboard />} />} />
-            <Route
-              path="*"
-              element={
-                <Navigate
-                  to={isAuthenticated ? "/passwords" : "/login"}
-                  replace
-                />
-              }
-            />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
       </div>
