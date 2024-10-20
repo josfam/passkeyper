@@ -4,7 +4,7 @@ from flask import Blueprint
 # Import blueprints in this folder
 from .signup import signup_bp
 from .login import login_bp
-from .OAuth import oauth_bp
+from .oauth import oauth_bp
 
 auth_bp = Blueprint("auth", __name__)
 
