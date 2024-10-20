@@ -14,7 +14,8 @@ import PasswordGenerator from "./pages/PasswordGenerator";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import SecurityDashboard from './pages/Dashboard'; 
+import SecurityDashboard from './pages/Dashboard';
+import LandingPage from "./pages/LandingPage";
 import "./styles/App.css";
 import "./styles/base.css";
 import HamburgerBtn from "./components/buttons/HamburgerBtn";
@@ -128,6 +129,7 @@ const App: React.FC = () => {
               path="/settings"
               element={<ProtectedRoute element={<Settings />} />}
             />
+            <Route path="/" element={<LandingPage />} />
             <Route path='/dashboard' element={<ProtectedRoute element={<SecurityDashboard />} />} />
             <Route
               path="*"
