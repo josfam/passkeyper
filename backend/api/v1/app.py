@@ -23,11 +23,11 @@ def create_app(config_class=DevelopmentConfig):
         r"/*": {
             "origins": app.config['CLIENT_ADDRESS'],
             "methods": ["GET", "HEAD","POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
-            "supports_credentials": True
-            # "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-            # "expose_headers": ["Content-Type", "X-CSRFToken"],
-            # "max_age": 3600,
-            # "send_wildcard": False
+            "supports_credentials": True,
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "expose_headers": ["Content-Type", "X-CSRFToken"],
+            "max_age": 3600,
+            "send_wildcard": False
         }
     })
 
