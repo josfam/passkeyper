@@ -1,6 +1,9 @@
 # venv
 venv-passkeyper/
 
+# helpers
+helper_scripts/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

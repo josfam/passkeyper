@@ -78,7 +78,8 @@ const generatePassword = ({
 	}
 	console.log(`generated password before loop:\n ${generatedPassword}`); // DEBUG
 	// account for characters that may already be part of the generated password
-	const availableSlots = passwordLength - generatePassword.length;
+	const availableSlots = passwordLength - generatedPassword.length;
+	console.log(`Available slots:\n ${availableSlots}`); // DEBUG
 	for (let i = 0; i < availableSlots; i++) {
 		const randomIndex = getRandomInt(0, possibleChars.length - 1) // 0 - last index of possibleChars
 		generatedPassword += possibleChars[randomIndex]

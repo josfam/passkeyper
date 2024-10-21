@@ -106,12 +106,11 @@ const PasswordGeneratorForm = () => {
 	}, [getPassword, passwordLength]);
 
 	return (
+		<div className='container mx-auto p-6 flex flex-col items-center justify-center w-full h-full mb-40'>
+		<h1 className="text-3xl font-bold mb-9">Password generator</h1>
 		<div id='form-container' className='p-10 w-3/4 rounded-lg flex flex-col justify-center gap-6
 			border border-slate-400 min-w-96'>
 			<Form {...form}>
-				<h1 className='text-2xl text-center m-0'>Password generator</h1>
-				<hr />
-
 				{/* password display area */}
 				<div id='password-display' className={`bg-slate-100 border w-full min-h-16 rounded-lg p-4 text-2xl
 					text-center text-sky-900 break-words ${isCopied ? 'bg-slate-200': ''}`}>
@@ -160,7 +159,7 @@ const PasswordGeneratorForm = () => {
 									}}
 									/>
 								</FormControl>
-								 {/* Conditionally render the error message */}
+								{/* Conditionally render the error message */}
 								{isBadLength && (
 									<p className="text-orange-800 text-md mt-2">
 									{`Password must be between ${MIN_PASSWORD_LEN} and ${MAX_PASSWORD_LEN} characters.`}
@@ -227,6 +226,7 @@ const PasswordGeneratorForm = () => {
 					</button>
 				</div>
 			</Form>
+		</div>
 		</div>
 	)
 }
