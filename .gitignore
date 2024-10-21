@@ -1,6 +1,9 @@
 # venv
 venv-passkeyper/
 
+# helper scripts
+helper_scripts/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -165,3 +168,4 @@ cython_debug/
 #.idea/
 frontend/package-lock.json
 flask_session/
+vite-project/
