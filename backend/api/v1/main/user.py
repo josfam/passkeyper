@@ -34,6 +34,8 @@ def update_user():
             user.username = data['name']
         if 'email' in data:
             user.email = data['email']
+        if 'password' in data:
+            user.hashed_master_password = data['password']
 
         user.updated_at = func.now()
 
