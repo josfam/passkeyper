@@ -37,6 +37,7 @@ import {
 import { Textarea } from "../components/ui/textarea";
 import { useToast } from "../hooks/use-toast";
 import axios from "axios";
+import CryptoJS from "crypto-js"; 
 
 interface PasswordEntry {
   id: number;
@@ -66,22 +67,58 @@ const PasswordDashboard: React.FC = () => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [ekSalt, setEkSalt] = useState<string | null>(null);
+  const [masterPassword, setMasterPassword] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPasswords();
+    fetchEkSalt();
   }, []);
 
+  const fetchEkSalt = async () => {
+  try {
+    const response = await axios.get("http://127.0.0.1:5000/internal/get-ek-salt", {
+      withCredentials: true,
+    });
+    setEkSalt(response.data.user_id);
+    setMasterPassword(response.data.password);
+    setEmail(response.data.email);
+  } catch (err) {
+    console.error("Error fetching ek_salt:", err);
+  }
+  };
   const fetchPasswords = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://127.0.0.1:5000/passwords", {
+      const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}passwords`, {
         withCredentials: true,
       });
-      setPasswords(response.data.passwords);
+      
+      console.log('Raw password data:', response.data); // Debug log
+      
+      const passwordsArray = response.data.passwords || [];
+      console.log('Passwords array before decryption:', passwordsArray); // Debug log
+      
+      const decryptedPasswords = passwordsArray.map(password => {
+        console.log('Processing password:', password); // Debug log
+        return {
+          ...password,
+          username: decryptData(password.username),
+          password: decryptData(password.password),
+          notes: password.notes ? decryptData(password.notes) : ''
+        };
+      });
+      
+      console.log('Decrypted passwords:', decryptedPasswords); // Debug log
+      setPasswords(decryptedPasswords);
     } catch (err) {
       setError("Failed to fetch password data");
       console.error("Error fetching passwords:", err);
+      if (err.response) {
+        console.log("Response data:", err.response.data);
+      }
     } finally {
       setLoading(false);
     }
@@ -89,34 +126,192 @@ const PasswordDashboard: React.FC = () => {
 
   const filteredPasswords = passwords.filter(
     (password) =>
-      password.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      password.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      password.url.toLowerCase().includes(searchTerm.toLowerCase())
+      password.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      password.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      password.url?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEdit = (password: PasswordEntry) => {
+    console.log('Password being edited:', password);
     setEditingPassword(password);
     setIsEditModalOpen(true);
   };
 
-  const handleSave = (updatedPassword: PasswordEntry) => {
-    // TODO: Make an API call to update the password
-    // For now, we'll just update it in our local state
-    setPasswords(
-      passwords.map((p) => (p.id === updatedPassword.id ? updatedPassword : p))
-    );
-    setIsEditModalOpen(false);
+  const handleAddPassword = () => {
+    setEditingPassword({
+      id: 0,
+      user_id: 0,
+      name: '',
+      username: '',
+      password: '',
+      url: '',
+      notes: '',
+      in_trash: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      moved_at: null,
+      folder: '',
+      authenticator_key: '',
+      match_detection: '',
+    });
+    setIsEditModalOpen(true);
   };
 
-  const handleMoveToTrash = (password: PasswordEntry) => {
-    // TODO: Make an API call to move the password to trash
-    // For now, we'll just update it in our local state
-    setPasswords(
-      passwords.map((p) =>
-        p.id === password.id ? { ...p, in_trash: true } : p
-      )
+const encryptData = (data: PasswordEntry) => {
+  if (!ekSalt || !masterPassword || !email) return data;
+  
+  const sensitiveFields = ['password', 'username', 'notes', 'url', 'name'];
+  const encryptedData = { ...data };
+
+  const keySize = 256 / 32;
+  const salt = CryptoJS.enc.Hex.parse(ekSalt);
+  const encryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
+    keySize: keySize,
+    iterations: 1000,
+  });
+
+  sensitiveFields.forEach(field => {
+    if (data[field]) {
+      const iv = CryptoJS.lib.WordArray.random(128/32);
+      const encrypted = CryptoJS.AES.encrypt(data[field], encryptionKey, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+      encryptedData[field] = iv.concat(encrypted.ciphertext).toString(CryptoJS.enc.Base64);
+    }
+  });
+
+  return encryptedData;
+};
+
+const decryptData = (encryptedData: any) => {
+  if (!ekSalt || !masterPassword) return encryptedData;
+  
+  const sensitiveFields = ['password', 'username', 'notes'];
+  const decryptedData = { ...encryptedData };
+
+  const keySize = 256 / 32;
+  const salt = CryptoJS.enc.Hex.parse(ekSalt);
+  const decryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
+    keySize: keySize,
+    iterations: 1000,
+  });
+
+  sensitiveFields.forEach(field => {
+    if (encryptedData[field]) {
+      try {
+        const data = CryptoJS.enc.Base64.parse(encryptedData[field]);
+        const iv = CryptoJS.lib.WordArray.create(data.words.slice(0, 4), 16);
+        const ciphertext = CryptoJS.lib.WordArray.create(data.words.slice(4), data.sigBytes - 16);
+        
+        const decrypted = CryptoJS.AES.decrypt({ ciphertext }, decryptionKey, {
+          iv: iv,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7,
+        });
+        
+        decryptedData[field] = decrypted.toString(CryptoJS.enc.Utf8);
+      } catch (error) {
+        console.error(`Error decrypting ${field}:`, error);
+        decryptedData[field] = encryptedData[field];
+      }
+    }
+  });
+
+  return decryptedData;
+};
+
+const handleSave = async (updatedPassword: PasswordEntry) => {
+  try {
+    // Only encrypt sensitive fields
+    const dataToSend = {
+      ...updatedPassword,
+      username: encryptData(updatedPassword.username),
+      password: encryptData(updatedPassword.password),
+      notes: updatedPassword.notes ? encryptData(updatedPassword.notes) : ''
+    };
+
+    const method = updatedPassword.id === 0 ? 'post' : 'patch';
+    const url = `${import.meta.env.VITE_FLASK_APP_API_URL}password${
+      updatedPassword.id === 0 ? '' : `/${updatedPassword.id}`
+    }`;
+
+    const response = await axios({
+      method: method,
+      url: url,
+      data: dataToSend,
+      withCredentials: true,
+    });
+
+    // Decrypt the response data before updating state
+    const decryptedResponse = {
+      ...response.data,
+      username: decryptData(response.data.username),
+      password: decryptData(response.data.password),
+      notes: response.data.notes ? decryptData(response.data.notes) : ''
+    };
+
+    setPasswords(prevPasswords => 
+      updatedPassword.id === 0
+        ? [...prevPasswords, decryptedResponse]
+        : prevPasswords.map(p => p.id === decryptedResponse.id ? decryptedResponse : p)
     );
-  };
+
+    setIsEditModalOpen(false);
+    toast({
+      title: `Password ${updatedPassword.id === 0 ? 'Added' : 'Updated'}`,
+      description: `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}.`,
+    });
+  } catch (error) {
+    console.error('Error saving password:', error);
+    toast({
+      title: "Error",
+      description: "Failed to save the password. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+  
+
+const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
+  try {
+    // First, modify the password object to mark it as trashed
+    const updatedPassword = {
+      ...password,
+      in_trash: true,
+      moved_at: new Date().toISOString()
+    };
+
+    // Make a delete request instead of DELETE to update the trash status
+    const response = await axios.delete(
+      `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
+      { withCredentials: true }
+    );
+
+    // Update local state to remove the password from the list
+    setPasswords(prevPasswords =>
+      prevPasswords.filter(p => p.id !== password.id)
+    );
+
+    // Close modal if we're in edit mode
+    if (closeModal) {
+      setIsEditModalOpen(false);
+    }
+
+    toast({
+      title: "Moved to Trash",
+      description: "The password has been moved to trash.",
+    });
+  } catch (error) {
+    console.error("Error moving password to trash:", error);
+    toast({
+      title: "Error",
+      description: "Failed to move the password to trash.",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -192,7 +387,7 @@ const PasswordDashboard: React.FC = () => {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Passwords</h1>
-        <Button>Add Password</Button>
+        <Button onClick={handleAddPassword}>Add Password</Button>
       </div>
       <div className="flex justify-between items-center mb-4">
         <Input
@@ -255,7 +450,17 @@ const PasswordDashboard: React.FC = () => {
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleMoveToTrash(password);
+                        console.log('Dropdown trash clicked, password:', password); // Debug log
+                        if (password && typeof password.id !== 'undefined') {
+                          handleMoveToTrash(password, false);
+                        } else {
+                          console.log('Invalid password from dropdown:', password); // Debug log
+                          toast({
+                            title: "Error",
+                            description: "Cannot delete this password - invalid ID.",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                     >
                       Move to Trash
@@ -270,141 +475,169 @@ const PasswordDashboard: React.FC = () => {
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>EDIT ITEM</DialogTitle>
-          </DialogHeader>
-          {editingPassword && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSave(editingPassword);
-              }}
-            >
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols items-center gap-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={editingPassword.name}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 items-center gap-4">
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <div className="flex">
-                      <Input
-                        className="text-base"
-                        id="username"
-                        name="username"
-                        value={editingPassword.username}
-                        onChange={handleInputChange}
-                      />
-                      {renderCopyButton(editingPassword.username, "Username")}
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <div className="flex relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        value={editingPassword.password}
-                        onChange={handleInputChange}
-                        className="pr-20 text-base"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={generatePassword}
-                        className="absolute right-16 top-0 bottom-0"
-                      >
-                        <Wand2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-8 top-0 bottom-0"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                      {renderCopyButton(editingPassword.password, "Password")}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols items-center gap-4">
-                  <div>
-                    <Label htmlFor="url">URL</Label>
-                    <div className="flex">
-                      <Input
-                        id="url"
-                        name="url"
-                        value={editingPassword.url}
-                        onChange={handleInputChange}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="ml-2"
-                        onClick={() =>
-                          window.open(editingPassword.url, '_blank')
-                        }
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                      {renderCopyButton(editingPassword.url, 'URL')}
-                    </div>
-                  </div>
-                </div>
+        <DialogHeader>
+          <DialogTitle>
+            {editingPassword ? (
+              <>Edit Password (ID: {editingPassword.id})</>
+            ) : (
+              "Add Password"
+            )}
+          </DialogTitle>
+        </DialogHeader>
+        {editingPassword !== null && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSave(editingPassword);
+            }}
+          >
+            <div className="grid gap-4 py-4">
+              {/* Name Input */}
+              <div className="grid grid-cols items-center gap-4">
                 <div>
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    name="notes"
-                    value={editingPassword.notes}
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={editingPassword.name}
                     onChange={handleInputChange}
-                    rows={4}
                   />
                 </div>
               </div>
-              <DialogFooter className="mt-6">
-                <div className="flex justify-between w-full">
-                  <div>
-                    <Button type="submit" className="mr-2">
-                      Save
+
+              {/* Username and Password Inputs */}
+              <div className="grid grid-cols-2 items-center gap-4">
+                {/* Username Input */}
+                <div>
+                  <Label htmlFor="username">Username</Label>
+                  <div className="flex">
+                    <Input
+                      className="text-base"
+                      id="username"
+                      name="username"
+                      value={editingPassword.username}
+                      onChange={handleInputChange}
+                    />
+                    {renderCopyButton(editingPassword.username, "Username")}
+                  </div>
+                </div>
+
+                {/* Password Input */}
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <div className="flex relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={editingPassword.password}
+                      onChange={handleInputChange}
+                      className="pr-20 text-base"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={generatePassword}
+                      className="absolute right-16 top-0 bottom-0"
+                    >
+                      <Wand2 className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="secondary"
-                      onClick={() => setIsEditModalOpen(false)}
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-8 top-0 bottom-0"
                     >
-                      Cancel
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
+                    {renderCopyButton(editingPassword.password, "Password")}
                   </div>
-                  <div>
+                </div>
+              </div>
+
+              {/* URL Input */}
+              <div className="grid grid-cols items-center gap-4">
+                <div>
+                  <Label htmlFor="url">URL</Label>
+                  <div className="flex">
+                    <Input
+                      id="url"
+                      name="url"
+                      value={editingPassword.url}
+                      onChange={handleInputChange}
+                    />
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleMoveToTrash(editingPassword)}
+                      className="ml-2"
+                      onClick={() => window.open(editingPassword.url, '_blank')}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4" />
                     </Button>
+                    {renderCopyButton(editingPassword.url, 'URL')}
                   </div>
                 </div>
-              </DialogFooter>
-            </form>
-          )}
+              </div>
+
+              {/* Notes Input */}
+              <div>
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  name="notes"
+                  value={editingPassword.notes}
+                  onChange={handleInputChange}
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            {/* Dialog Footer with Action Buttons */}
+            <DialogFooter className="mt-6">
+              <div className="flex justify-between w-full">
+                <div>
+                  <Button type="submit" className="mr-2">
+                    Save
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsEditModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Trash button clicked, editingPassword:', editingPassword);
+                      if (editingPassword && editingPassword.id) {
+                        handleMoveToTrash(editingPassword, true);
+                      } else {console.log('Invalid password object:', editingPassword); // Debug log
+                        toast({
+                          title: "Error",
+                          description: "Cannot delete an unsaved password.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </DialogFooter>
+          </form>
+        )}
         </DialogContent>
       </Dialog>
     </div>
