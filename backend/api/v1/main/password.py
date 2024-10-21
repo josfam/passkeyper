@@ -77,7 +77,11 @@ def get_a_password(pass_ent_id):
         'username': password_entry.username,
         'password': password_entry.password,
         'url': password_entry.url,
-        'notes': password_entry.notes
+        'notes': password_entry.notes,
+        'created_at': password_entry.created_at,
+        'updated_at': password_entry.updated_at,
+        'in_trash': password_entry.in_trash,
+        'moved_at': password_entry.moved_at     
     }
 
     return jsonify(password=pass_ent_data), 200
@@ -113,7 +117,11 @@ def get_passwords():
                 'username': password.username,
                 'password': password.password,
                 'url': password.url,
-                'notes': password.notes
+                'notes': password.notes,
+                'created_at': password.created_at,
+                'updated_at': password.updated_at,
+                'in_trash': password.in_trash,
+                'moved_at': password.moved_at    
             }
             for password in paginated_passes.items
         ]
