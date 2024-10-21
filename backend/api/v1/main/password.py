@@ -73,6 +73,7 @@ def get_a_password(pass_ent_id):
 
     # Formatting the password entry
     pass_ent_data = {
+        'id': password_entry.id,
         'name': password_entry.name,
         'username': password_entry.username,
         'password': password_entry.password,
@@ -113,6 +114,7 @@ def get_passwords():
         # Format the passwords to return
         password_list = [
             {
+                'id': password.id,
                 'name': password.name,
                 'username': password.username,
                 'password': password.password,
