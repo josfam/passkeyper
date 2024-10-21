@@ -1,5 +1,6 @@
 export const MAX_PASSWORD_LEN: number = 64;
 export const MIN_PASSWORD_LEN: number = 10;
+export const MIN_MASTERPASSWORD_SCORE = 3;
 
 // Character sets for password generation
 export const SPECIAL_CHARS_LIST: string = '!@#$%^&*()_+~`|}{[]:;?><,./-=';

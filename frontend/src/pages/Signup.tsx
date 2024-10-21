@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback} from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "../components/ui/button";
@@ -11,8 +11,10 @@ import {
   CardContent,
   CardFooter,
 } from "../components/ui/card";
+import { MIN_MASTERPASSWORD_SCORE } from "../utils/passwords/Constants";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
+import checkWeakPassword from "../utils/passwords/stengthCheck";
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
@@ -22,6 +24,11 @@ const Signup: React.FC = () => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [strengthMessage, setStrengthMessage] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
+  const [passwordInputFocused, setPasswordInputFocused] = useState(false);
+  const hasStrengthInfo = strengthMessage || warningMessage
+  const errorInCredentials = !(password && username && email && !hasStrengthInfo);
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -63,6 +70,24 @@ const Signup: React.FC = () => {
     }
   };
 
+  const checkStrength = useCallback((masterPassword: string) => {
+	const report = checkWeakPassword({masterPassword: masterPassword});
+	console.log(report);
+	const [score, suggestion, warning] = [
+		report.score,
+		report.feedback.suggestions[0],
+		report.feedback.warning,]
+	if (score <= MIN_MASTERPASSWORD_SCORE) {
+		setWarningMessage(warning || '')
+		setStrengthMessage(suggestion)
+		return;
+	}
+  }, []);
+
+  useEffect(() => {
+	checkStrength(password);
+  }, [checkStrength, password]);
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-[350px]">
@@ -89,14 +114,22 @@ const Signup: React.FC = () => {
                 required
                 disabled={isLoading}
               />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+			  <div className="flex flex-col gap-1">
+				<Input
+					type="password"
+					placeholder="Master Password"
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					required
+					disabled={isLoading}
+					className={`${(hasStrengthInfo && passwordInputFocused) ? 'border border-red-700': ''}`}
+					// onFocus={}
+					onInput={() => setPasswordInputFocused(true)}
+				/>
+				{/* error messages if any */}
+				<p className="text-red-700 text-sm text-center">{
+				passwordInputFocused ? (warningMessage || strengthMessage) : ''}</p>
+			  </div>
             </div>
             {error && (
               <Alert variant="destructive" className="mt-4">
@@ -104,7 +137,7 @@ const Signup: React.FC = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full mt-4" disabled={isLoading}>
+            <Button type="submit" className="w-full mt-4" disabled={isLoading || errorInCredentials}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
