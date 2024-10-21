@@ -96,29 +96,21 @@ const PasswordDashboard: React.FC = () => {
         withCredentials: true,
       });
       
-      console.log('Raw password data:', response.data); // Debug log
-      
       const passwordsArray = response.data.passwords || [];
-      console.log('Passwords array before decryption:', passwordsArray); // Debug log
       
-      const decryptedPasswords = passwordsArray.map(password => {
-        console.log('Processing password:', password); // Debug log
-        return {
-          ...password,
-          username: decryptData(password.username),
-          password: decryptData(password.password),
-          notes: password.notes ? decryptData(password.notes) : ''
-        };
-      });
+      const decryptedPasswords = passwordsArray.map((password: PasswordEntry) => ({
+        ...password,
+        username: decryptData(password.username),
+        password: decryptData(password.password),
+        notes: password.notes ? decryptData(password.notes) : '',
+        url: password.url,
+        name: password.name
+      }));
       
-      console.log('Decrypted passwords:', decryptedPasswords); // Debug log
       setPasswords(decryptedPasswords);
     } catch (err) {
       setError("Failed to fetch password data");
       console.error("Error fetching passwords:", err);
-      if (err.response) {
-        console.log("Response data:", err.response.data);
-      }
     } finally {
       setLoading(false);
     }
@@ -157,161 +149,132 @@ const PasswordDashboard: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-const encryptData = (data: PasswordEntry) => {
-  if (!ekSalt || !masterPassword || !email) return data;
-  
-  const sensitiveFields = ['password', 'username', 'notes', 'url', 'name'];
-  const encryptedData = { ...data };
+  const encryptData = (data: string): string => {
+    if (!ekSalt || !masterPassword || !data) return data;
+    
+    try {
+      const keySize = 256 / 32;
+      const salt = CryptoJS.enc.Hex.parse(ekSalt);
+      const encryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
+        keySize: keySize,
+        iterations: 1000,
+      });
 
-  const keySize = 256 / 32;
-  const salt = CryptoJS.enc.Hex.parse(ekSalt);
-  const encryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
-    keySize: keySize,
-    iterations: 1000,
-  });
-
-  sensitiveFields.forEach(field => {
-    if (data[field]) {
       const iv = CryptoJS.lib.WordArray.random(128/32);
-      const encrypted = CryptoJS.AES.encrypt(data[field], encryptionKey, {
+      const encrypted = CryptoJS.AES.encrypt(data, encryptionKey, {
         iv: iv,
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7,
       });
-      encryptedData[field] = iv.concat(encrypted.ciphertext).toString(CryptoJS.enc.Base64);
+
+      return iv.concat(encrypted.ciphertext).toString(CryptoJS.enc.Base64);
+    } catch (error) {
+      console.error('Encryption error:', error);
+      return data;
     }
-  });
+  };
 
-  return encryptedData;
-};
+  const decryptData = (encryptedData: string): string => {
+    if (!ekSalt || !masterPassword || !encryptedData) return encryptedData;
+    
+    try {
+      const keySize = 256 / 32;
+      const salt = CryptoJS.enc.Hex.parse(ekSalt);
+      const decryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
+        keySize: keySize,
+        iterations: 1000,
+      });
 
-const decryptData = (encryptedData: any) => {
-  if (!ekSalt || !masterPassword) return encryptedData;
-  
-  const sensitiveFields = ['password', 'username', 'notes'];
-  const decryptedData = { ...encryptedData };
-
-  const keySize = 256 / 32;
-  const salt = CryptoJS.enc.Hex.parse(ekSalt);
-  const decryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
-    keySize: keySize,
-    iterations: 1000,
-  });
-
-  sensitiveFields.forEach(field => {
-    if (encryptedData[field]) {
-      try {
-        const data = CryptoJS.enc.Base64.parse(encryptedData[field]);
-        const iv = CryptoJS.lib.WordArray.create(data.words.slice(0, 4), 16);
-        const ciphertext = CryptoJS.lib.WordArray.create(data.words.slice(4), data.sigBytes - 16);
-        
-        const decrypted = CryptoJS.AES.decrypt({ ciphertext }, decryptionKey, {
-          iv: iv,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7,
-        });
-        
-        decryptedData[field] = decrypted.toString(CryptoJS.enc.Utf8);
-      } catch (error) {
-        console.error(`Error decrypting ${field}:`, error);
-        decryptedData[field] = encryptedData[field];
-      }
+      const data = CryptoJS.enc.Base64.parse(encryptedData);
+      const iv = CryptoJS.lib.WordArray.create(data.words.slice(0, 4), 16);
+      const ciphertext = CryptoJS.lib.WordArray.create(data.words.slice(4), data.sigBytes - 16);
+      
+      const decrypted = CryptoJS.AES.decrypt({ ciphertext }, decryptionKey, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+      
+      return decrypted.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.error('Decryption error:', error);
+      return encryptedData;
     }
-  });
+  };
 
-  return decryptedData;
-};
+  const handleSave = async (updatedPassword: PasswordEntry) => {
+    try {
+      const dataToSend = {
+        ...updatedPassword,
+        username: encryptData(updatedPassword.username),
+        password: encryptData(updatedPassword.password),
+        notes: updatedPassword.notes ? encryptData(updatedPassword.notes) : '',
+        url: updatedPassword.url,
+        name: updatedPassword.name
+      };
 
-const handleSave = async (updatedPassword: PasswordEntry) => {
-  try {
-    // Only encrypt sensitive fields
-    const dataToSend = {
-      ...updatedPassword,
-      username: encryptData(updatedPassword.username),
-      password: encryptData(updatedPassword.password),
-      notes: updatedPassword.notes ? encryptData(updatedPassword.notes) : ''
-    };
+      const method = updatedPassword.id === 0 ? 'post' : 'patch';
+      const url = `${import.meta.env.VITE_FLASK_APP_API_URL}password${
+        updatedPassword.id === 0 ? '' : `/${updatedPassword.id}`
+      }`;
 
-    const method = updatedPassword.id === 0 ? 'post' : 'patch';
-    const url = `${import.meta.env.VITE_FLASK_APP_API_URL}password${
-      updatedPassword.id === 0 ? '' : `/${updatedPassword.id}`
-    }`;
+      const response = await axios({
+        method,
+        url,
+        data: dataToSend,
+        withCredentials: true,
+      });
 
-    const response = await axios({
-      method: method,
-      url: url,
-      data: dataToSend,
-      withCredentials: true,
-    });
+      // Update the passwords list with the new/updated password
+      await fetchPasswords();
 
-    // Decrypt the response data before updating state
-    const decryptedResponse = {
-      ...response.data,
-      username: decryptData(response.data.username),
-      password: decryptData(response.data.password),
-      notes: response.data.notes ? decryptData(response.data.notes) : ''
-    };
-
-    setPasswords(prevPasswords => 
-      updatedPassword.id === 0
-        ? [...prevPasswords, decryptedResponse]
-        : prevPasswords.map(p => p.id === decryptedResponse.id ? decryptedResponse : p)
-    );
-
-    setIsEditModalOpen(false);
-    toast({
-      title: `Password ${updatedPassword.id === 0 ? 'Added' : 'Updated'}`,
-      description: `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}.`,
-    });
-  } catch (error) {
-    console.error('Error saving password:', error);
-    toast({
-      title: "Error",
-      description: "Failed to save the password. Please try again.",
-      variant: "destructive",
-    });
-  }
-};
-  
-
-const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
-  try {
-    // First, modify the password object to mark it as trashed
-    const updatedPassword = {
-      ...password,
-      in_trash: true,
-      moved_at: new Date().toISOString()
-    };
-
-    // Make a delete request instead of DELETE to update the trash status
-    const response = await axios.delete(
-      `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
-      { withCredentials: true }
-    );
-
-    // Update local state to remove the password from the list
-    setPasswords(prevPasswords =>
-      prevPasswords.filter(p => p.id !== password.id)
-    );
-
-    // Close modal if we're in edit mode
-    if (closeModal) {
       setIsEditModalOpen(false);
+      toast({
+        title: `Password ${updatedPassword.id === 0 ? 'Added' : 'Updated'}`,
+        description: `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}.`,
+      });
+    } catch (error) {
+      console.error('Error saving password:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save the password. Please try again.",
+        variant: "destructive",
+      });
     }
+  };
+    
 
-    toast({
-      title: "Moved to Trash",
-      description: "The password has been moved to trash.",
-    });
-  } catch (error) {
-    console.error("Error moving password to trash:", error);
-    toast({
-      title: "Error",
-      description: "Failed to move the password to trash.",
-      variant: "destructive",
-    });
-  }
-};
+  const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
+    try {
+      if (!password || typeof password.id === 'undefined') {
+        throw new Error('Invalid password object');
+      }
+
+      await axios.delete(
+        `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
+        { withCredentials: true }
+      );
+
+      // Refresh the password list instead of manually updating state
+      await fetchPasswords();
+
+      if (closeModal) {
+        setIsEditModalOpen(false);
+      }
+
+      toast({
+        title: "Moved to Trash",
+        description: "The password has been moved to trash.",
+      });
+    } catch (error) {
+      console.error("Error moving password to trash:", error);
+      toast({
+        title: "Error",
+        description: "Failed to move the password to trash.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
