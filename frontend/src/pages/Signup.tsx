@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback} from "react";
 import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 import axios from "axios";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -19,22 +20,49 @@ import checkWeakPassword from "../utils/passwords/stengthCheck";
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 const Signup: React.FC = () => {
-  const [email, setEmail] = useState("");
+  // email state 
+  const [email, setEmail] = useState(""); 
+  const [emailError, setEmailError] = useState('');
+  const [emailTyped, setEmailTyped] = useState(false);
+  // password state
   const [password, setPassword] = useState("");
+  const [warningMessage, setWarningMessage] = useState("");
+  const [hasStrengthInfo, setHasStrengthInfo] = useState(false)
+  const [strengthMessage, setStrengthMessage] = useState("");
+  // username state
   const [username, setUsername] = useState("");
+  // general state
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [strengthMessage, setStrengthMessage] = useState("");
-  const [warningMessage, setWarningMessage] = useState("");
-  const [passwordInputFocused, setPasswordInputFocused] = useState(false);
-  const hasStrengthInfo = strengthMessage || warningMessage
-  const errorInCredentials = !(password && username && email && !hasStrengthInfo);
+
+  const emailSchema = z.string().email({
+	message: "Enter a valid email address"
+  })  // email validation schema
   const navigate = useNavigate();
+
+  const handleEmailValidation = useCallback((emailAddress: string) => {
+	if (!emailTyped) return;
+
+	// validate the email
+	const emailValidation = emailSchema.safeParse(emailAddress);
+	if (!emailValidation.success) {
+		setEmailError(emailValidation.error.issues[0].message)
+		return;
+	} else {
+		setEmailError('');
+	}
+  }, [emailSchema, emailTyped])
+
+  useEffect(() => {
+	handleEmailValidation(email)
+  }, [handleEmailValidation, email])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+	setEmailError('');
+
     const ekSalt =
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15);
@@ -77,12 +105,15 @@ const Signup: React.FC = () => {
 		report.score,
 		report.feedback.suggestions[0],
 		report.feedback.warning,]
-	if (score <= MIN_MASTERPASSWORD_SCORE) {
+	if (score < MIN_MASTERPASSWORD_SCORE) {
 		setWarningMessage(warning || '')
 		setStrengthMessage(suggestion)
+		if (password) setHasStrengthInfo(true);
 		return;
+	} else {
+		setHasStrengthInfo(false);
 	}
-  }, []);
+  }, [password]);
 
   useEffect(() => {
 	checkStrength(password);
@@ -98,14 +129,34 @@ const Signup: React.FC = () => {
         <CardContent>
           <form onSubmit={handleSignup}>
             <div className="space-y-4">
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+			  <div className="flex flex-col gap-1">
+				<Input
+					type="email"
+					placeholder="Email"
+					value={email}
+					onChange={(e) => {
+						const value = e.target.value;
+						if (value === '') {
+							setEmail(value);
+							setEmailError('');
+							setEmailTyped(false)
+						} else {
+							setEmail(value);
+							setEmailTyped(true);
+							handleEmailValidation(email);
+						}}
+					}
+					required
+					disabled={isLoading}
+					className={`${emailError ? 'border border-red-700': ''}`}
+				/>
+				{/* error messages if any */}
+				{emailError && (
+					<p className="text-red-700 text-sm text-center">
+						{emailError}
+					</p>
+				)}
+			  </div>
               <Input
                 type="text"
                 placeholder="Username"
@@ -119,16 +170,23 @@ const Signup: React.FC = () => {
 					type="password"
 					placeholder="Master Password"
 					value={password}
-					onChange={(e) => setPassword(e.target.value)}
 					required
 					disabled={isLoading}
-					className={`${(hasStrengthInfo && passwordInputFocused) ? 'border border-red-700': ''}`}
-					// onFocus={}
-					onInput={() => setPasswordInputFocused(true)}
+					onChange={(e) => {
+						const value = e.target.value;
+						if (value === '') {
+							setHasStrengthInfo(false);
+							setPassword(value);
+						} else {
+							setPassword(value);
+							checkStrength(password);
+						}
+					}}
+					className={`${hasStrengthInfo ? 'border border-red-700': ''}`}
 				/>
 				{/* error messages if any */}
 				<p className="text-red-700 text-sm text-center">{
-				passwordInputFocused ? (warningMessage || strengthMessage) : ''}</p>
+				hasStrengthInfo ? (warningMessage || strengthMessage) : ''}</p>
 			  </div>
             </div>
             {error && (
@@ -137,7 +195,8 @@ const Signup: React.FC = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full mt-4" disabled={isLoading || errorInCredentials}>
+            <Button type="submit" className="w-full mt-4" disabled={
+				isLoading || hasStrengthInfo || !username || !email || !password}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
