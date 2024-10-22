@@ -69,7 +69,6 @@ const PasswordDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [ekSalt, setEkSalt] = useState<string | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -79,12 +78,11 @@ const PasswordDashboard: React.FC = () => {
 
   const fetchEkSalt = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:5000/internal/get-ek-salt", {
+    const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}internal/get-ek-salt`, {
       withCredentials: true,
     });
     setEkSalt(response.data.user_id);
     setMasterPassword(response.data.password);
-    setEmail(response.data.email);
   } catch (err) {
     console.error("Error fetching ek_salt:", err);
   }
@@ -244,37 +242,36 @@ const PasswordDashboard: React.FC = () => {
   };
     
 
-  const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
-    try {
-      if (!password || typeof password.id === 'undefined') {
-        throw new Error('Invalid password object');
-      }
-
-      await axios.delete(
-        `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
-        { withCredentials: true }
-      );
-
-      // Refresh the password list instead of manually updating state
-      await fetchPasswords();
-
-      if (closeModal) {
-        setIsEditModalOpen(false);
-      }
-
-      toast({
-        title: "Moved to Trash",
-        description: "The password has been moved to trash.",
-      });
-    } catch (error) {
-      console.error("Error moving password to trash:", error);
-      toast({
-        title: "Error",
-        description: "Failed to move the password to trash.",
-        variant: "destructive",
-      });
+const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
+  try {
+    if (!password || typeof password.id === 'undefined') {
+      throw new Error('Invalid password object');
     }
-  };
+
+    await axios.delete(
+      `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
+      { withCredentials: true }
+    );
+
+    await fetchPasswords();
+
+    if (closeModal) {
+      setIsEditModalOpen(false);
+    }
+
+    toast({
+      title: "Moved to Trash",
+      description: "The password has been moved to trash.",
+    });
+  } catch (error) {
+    console.error("Error moving password to trash:", error);
+    toast({
+      title: "Error",
+      description: "Failed to move the password to trash.",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -306,10 +303,12 @@ const PasswordDashboard: React.FC = () => {
 
   const renderCopyButton = (text: string, field: string) => (
     <Button
+      type="button" // Add this
       variant="ghost"
       size="icon"
       className="ml-2"
       onClick={(e) => {
+        e.preventDefault(); // Add this
         e.stopPropagation();
         copyToClipboard(text, field);
       }}
