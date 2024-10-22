@@ -2,15 +2,7 @@
 
 /* dropdown elements */
 .dropdown-item {
-	@apply
-	text-center
-	text-xl
-	p-4
-	w-full
-	decoration-1
-	underline-offset-8
-	hover:underline
-	;
+	@apply text-center text-xl p-4 w-full decoration-1 underline-offset-8 hover:underline
 }
 
 /* for radial buttons and checkbox symbols */
@@ -28,4 +20,8 @@
 
 .btn-secondary {
 	@apply bg-transparent border border-blue-400 text-sky-950 text-xl
+}
+
+li {
+	@apply list-none m-0 p-0
 }
