@@ -7,6 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer } from "react-toastify";
 import Sidebar from "./components/Sidebar";
 import Passwords from "./pages/Passwords";
 import Trash from "./pages/Trash";
@@ -96,7 +97,9 @@ const App: React.FC = () => {
     const shouldHideSidebar = hideOnPaths.includes(location.pathname);
 
     return (
-      <div className="flex flex-col h-screen overflow-hidden md:flex-row">
+		<>
+	    <ToastContainer></ToastContainer> {/* toast messages */}
+		<div className="flex flex-col h-screen overflow-hidden md:flex-row">
         {isAuthenticated && !shouldHideSidebar && (
           <>
             <div className="z-30 h-16 p-4 flex w-full bg-slate-200 relative md:hidden">
@@ -150,6 +153,7 @@ const App: React.FC = () => {
           </Routes>
         </div>
       </div>
+	  </>
     );
   };
 
