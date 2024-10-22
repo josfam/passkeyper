@@ -98,8 +98,8 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-screen overflow-hidden md:flex-row">
         {isAuthenticated && !shouldHideSidebar && (
-          <div>
-            <div className="z-30 h-16 p-4 flex w-full bg-slate-200 fixed md:hidden">
+          <>
+            <div className="z-30 h-16 p-4 flex w-full bg-slate-200 relative md:hidden">
               <HamburgerBtn
                 setIsSidebarOpen={setIsSidebarOpen}
                 isSidebarOpen={isSidebarOpen}
@@ -112,12 +112,11 @@ const App: React.FC = () => {
               />
             )}
             <Sidebar isOpen={isSidebarOpen} onLogout={handleLogout} />
-          </div>
+          </>
         )}
         <div
           id="content-area"
-          className={`bg-white min-h-screen flex-1 flex-col overflow-y-scroll
-            ${!shouldHideSidebar && !shouldHideTopOffset() ? "mt-16 md:mt-0" : "mt-0"}`}
+          className={`bg-white min-h-screen flex-1 flex-col overflow-y-scroll`}
         >
           <Routes>
             <Route
@@ -152,10 +151,6 @@ const App: React.FC = () => {
         </div>
       </div>
     );
-  };
-
-  const shouldHideTopOffset = (): boolean => {
-    return ["/login", "/signup", "/"].includes(location.pathname);
   };
 
   return (
