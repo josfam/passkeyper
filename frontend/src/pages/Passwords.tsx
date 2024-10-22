@@ -37,7 +37,7 @@ import {
 import { Textarea } from "../components/ui/textarea";
 import { useToast } from "../hooks/use-toast";
 import axios from "axios";
-import CryptoJS from "crypto-js"; 
+import CryptoJS from "crypto-js";
 
 interface PasswordEntry {
   id: number;
@@ -77,33 +77,87 @@ const PasswordDashboard: React.FC = () => {
   }, []);
 
   const fetchEkSalt = async () => {
-  try {
-    const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}internal/get-ek-salt`, {
-      withCredentials: true,
-    });
-    setEkSalt(response.data.user_id);
-    setMasterPassword(response.data.password);
-  } catch (err) {
-    console.error("Error fetching ek_salt:", err);
-  }
+    try {
+      console.log('Fetching ek_salt...');
+      const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}internal/get-ek-salt`, {
+        withCredentials: true,
+      });
+      console.log('Response:', response.data);
+
+      setEkSalt(response.data.ek_salt);
+      setMasterPassword(response.data.password);
+      
+      console.log('Set ekSalt to:', response.data.ek_salt);
+      console.log('Set masterPassword to:', response.data.password);
+    } catch (err) {
+      console.error("Error fetching ek_salt:", err);
+    }
   };
+
+  // tests decryption and encryption
+  const testEncryption = () => {
+    console.log('Testing encryption...'); 
+    console.log('ekSalt:', ekSalt); 
+    console.log('masterPassword:', masterPassword);
+    
+    const testText = "Hello World 123!";
+    console.log('Original text:', testText);
+    
+    const encrypted = encryptData(testText);
+    console.log('Encrypted:', encrypted);
+    
+    const decrypted = decryptData(encrypted);
+    console.log('Decrypted:', decrypted);
+    
+    toast({
+      title: "Encryption Test Results",
+      description: `Original: ${testText}
+  Encrypted: ${encrypted}
+  Decrypted: ${decrypted}
+  Test ${testText === decrypted ? 'PASSED ✅' : 'FAILED ❌'}`,
+    });
+  };
+
   const fetchPasswords = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}passwords`, {
-        withCredentials: true,
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_FLASK_APP_API_URL}passwords`,
+        { withCredentials: true }
+      );
       
       const passwordsArray = response.data.passwords || [];
       
-      const decryptedPasswords = passwordsArray.map((password: PasswordEntry) => ({
-        ...password,
-        username: decryptData(password.username),
-        password: decryptData(password.password),
-        notes: password.notes ? decryptData(password.notes) : '',
-        url: password.url,
-        name: password.name
-      }));
+      // Add debug logging
+      console.log('Fetched passwords:', passwordsArray);
+      
+      const decryptedPasswords = passwordsArray.map((password: PasswordEntry) => {
+        try {
+          const decrypted = {
+            ...password,
+            username: decryptData(password.username),
+            password: decryptData(password.password),
+            notes: password.notes ? decryptData(password.notes) : '',
+          };
+          console.log('Decrypted entry:', {
+            id: password.id,
+            original: {
+              username: password.username,
+              password: password.password,
+              notes: password.notes
+            },
+            decrypted: {
+              username: decrypted.username,
+              password: decrypted.password,
+              notes: decrypted.notes
+            }
+          });
+          return decrypted;
+        } catch (error) {
+          console.error(`Error decrypting password ${password.id}:`, error);
+          return password;
+        }
+      });
       
       setPasswords(decryptedPasswords);
     } catch (err) {
@@ -151,21 +205,30 @@ const PasswordDashboard: React.FC = () => {
     if (!ekSalt || !masterPassword || !data) return data;
     
     try {
-      const keySize = 256 / 32;
+      // Generate encryption key
       const salt = CryptoJS.enc.Hex.parse(ekSalt);
-      const encryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
-        keySize: keySize,
-        iterations: 1000,
+      const key = CryptoJS.PBKDF2(masterPassword, salt, {
+        keySize: 256/32,
+        iterations: 1000
       });
-
-      const iv = CryptoJS.lib.WordArray.random(128/32);
-      const encrypted = CryptoJS.AES.encrypt(data, encryptionKey, {
+      
+      // Generate random IV
+      const iv = CryptoJS.lib.WordArray.random(16);
+      
+      // Encrypt the data
+      const encrypted = CryptoJS.AES.encrypt(data, key, {
         iv: iv,
         mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7,
+        padding: CryptoJS.pad.Pkcs7
       });
-
-      return iv.concat(encrypted.ciphertext).toString(CryptoJS.enc.Base64);
+      
+      // Combine IV and ciphertext
+      const combined = CryptoJS.lib.WordArray.create()
+        .concat(iv)
+        .concat(encrypted.ciphertext);
+      
+      // Return as base64 string
+      return combined.toString(CryptoJS.enc.Base64);
     } catch (error) {
       console.error('Encryption error:', error);
       return data;
@@ -176,26 +239,40 @@ const PasswordDashboard: React.FC = () => {
     if (!ekSalt || !masterPassword || !encryptedData) return encryptedData;
     
     try {
-      const keySize = 256 / 32;
+      // Convert the combined base64 string back to WordArray
+      const combined = CryptoJS.enc.Base64.parse(encryptedData);
+      
+      // Extract IV and ciphertext
+      const iv = CryptoJS.lib.WordArray.create(combined.words.slice(0, 4));
+      const ciphertext = CryptoJS.lib.WordArray.create(
+        combined.words.slice(4),
+        combined.sigBytes - 16
+      );
+      
+      // Generate decryption key
       const salt = CryptoJS.enc.Hex.parse(ekSalt);
-      const decryptionKey = CryptoJS.PBKDF2(masterPassword, salt, {
-        keySize: keySize,
-        iterations: 1000,
-      });
-
-      const data = CryptoJS.enc.Base64.parse(encryptedData);
-      const iv = CryptoJS.lib.WordArray.create(data.words.slice(0, 4), 16);
-      const ciphertext = CryptoJS.lib.WordArray.create(data.words.slice(4), data.sigBytes - 16);
-      
-      const decrypted = CryptoJS.AES.decrypt({ ciphertext }, decryptionKey, {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7,
+      const key = CryptoJS.PBKDF2(masterPassword, salt, {
+        keySize: 256/32,
+        iterations: 1000
       });
       
+      // Decrypt the data
+      const decrypted = CryptoJS.AES.decrypt(
+        { ciphertext: ciphertext },
+        key,
+        {
+          iv: iv,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7
+        }
+      );
+      
+      // Convert to UTF8 string
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (error) {
       console.error('Decryption error:', error);
+      console.error('Encrypted data:', encryptedData);
+      console.error('Salt:', ekSalt);
       return encryptedData;
     }
   };
@@ -349,6 +426,7 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Passwords</h1>
+        <Button onClick={testEncryption} className="mr-2">Test Encryption</Button> 
         <Button onClick={handleAddPassword}>Add Password</Button>
       </div>
       <div className="flex justify-between items-center mb-4">
