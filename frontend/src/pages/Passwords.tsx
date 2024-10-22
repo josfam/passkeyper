@@ -303,12 +303,12 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
 
   const renderCopyButton = (text: string, field: string) => (
     <Button
-      type="button" // Add this
+      type="button"
       variant="ghost"
       size="icon"
       className="ml-2"
       onClick={(e) => {
-        e.preventDefault(); // Add this
+        e.preventDefault();
         e.stopPropagation();
         copyToClipboard(text, field);
       }}
