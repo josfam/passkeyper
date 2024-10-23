@@ -35,9 +35,11 @@ import {
   Wand2,
 } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
-import { useToast } from "../hooks/use-toast";
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 interface PasswordEntry {
   id: number;
@@ -69,7 +71,6 @@ const PasswordDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [ekSalt, setEkSalt] = useState<string | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchEkSalt();
@@ -230,7 +231,7 @@ const PasswordDashboard: React.FC = () => {
           padding: CryptoJS.pad.Pkcs7
         }
       );
-      
+
       // Convert to UTF8 string
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (error) {
@@ -268,17 +269,12 @@ const PasswordDashboard: React.FC = () => {
       await fetchPasswords();
 
       setIsEditModalOpen(false);
-      toast({
-        title: `Password ${updatedPassword.id === 0 ? 'Added' : 'Updated'}`,
-        description: `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}.`,
-      });
+      toast.success(
+        `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}`
+      );
     } catch (error) {
       console.error('Error saving password:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save the password. Please try again.",
-        variant: "destructive",
-      });
+      toast.error('Failed to save the password. Please try again.');
     }
   };
     
@@ -300,17 +296,10 @@ const PasswordDashboard: React.FC = () => {
         setIsEditModalOpen(false);
       }
 
-      toast({
-        title: "Moved to Trash",
-        description: "The password has been moved to trash.",
-      });
+      toast.success('The password has been moved to trash.');
     } catch (error) {
       console.error("Error moving password to trash:", error);
-      toast({
-        title: "Error",
-        description: "Failed to move the password to trash.",
-        variant: "destructive",
-      });
+      toast.error('Failed to move the password to trash.');
     }
   };
 
@@ -326,19 +315,12 @@ const PasswordDashboard: React.FC = () => {
       .writeText(text)
       .then(() => {
         setCopiedField(field);
-        toast({
-          title: "Copied to clipboard",
-          description: `${field} has been copied to your clipboard.`,
-        });
+        toast.success(`${field} has been copied to your clipboard.`);
         setTimeout(() => setCopiedField(null), 2000);
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
-        toast({
-          title: "Copy failed",
-          description: "Failed to copy text to clipboard.",
-          variant: "destructive",
-        });
+        toast.error('Failed to copy text to clipboard.');
       });
   };
 
@@ -372,10 +354,7 @@ const PasswordDashboard: React.FC = () => {
     }
     setEditingPassword((prev) => (prev ? { ...prev, password } : null));
     setShowPassword(true);
-    toast({
-      title: "Password generated",
-      description: "A new strong password has been generated.",
-    });
+    toast.success('A new strong password has been generated.');
   };
 
   if (loading)
@@ -456,11 +435,7 @@ const PasswordDashboard: React.FC = () => {
                         if (password && typeof password.id !== 'undefined') {
                           handleMoveToTrash(password, false);
                         } else {
-                          toast({
-                            title: "Error",
-                            description: "Cannot delete this password - invalid ID.",
-                            variant: "destructive",
-                          });
+                          toast.error('Cannot delete this password - invalid ID.');
                         }
                       }}
                     >
@@ -622,11 +597,7 @@ const PasswordDashboard: React.FC = () => {
                       e.preventDefault();
                       if (editingPassword && editingPassword.id) {
                         handleMoveToTrash(editingPassword, true);
-                      } else {toast({
-                            title: "Error",
-                            description: "Cannot delete an unsaved password.",
-                            variant: "destructive",
-                        });
+                      } else {toast.error('Cannot delete an unsaved password.');
                       }
                     }}
                   >
