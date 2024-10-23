@@ -478,10 +478,10 @@ const PasswordDashboard: React.FC = () => {
         <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>
-            {editingPassword ? (
-              <>Edit Password (ID: {editingPassword.id})</>
+            {editingPassword && editingPassword.id > 0 ? (
+              <>Edit A Password Entry</>
             ) : (
-              "Add Password"
+              "Add A Password Entry"
             )}
           </DialogTitle>
         </DialogHeader>
