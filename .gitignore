@@ -168,3 +168,4 @@ cython_debug/
 #.idea/
 frontend/package-lock.json
 flask_session/
+vite-project/

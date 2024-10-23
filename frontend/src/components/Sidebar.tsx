@@ -21,12 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onLogout }) => {
   return (
     <div
       id="sidebar-container"
-      className={`z-30 h-full min-w-64 ${
-        isOpen ? "flex" : "hidden"
-      } overflow-y-auto
-        absolute inline-block
-        md:block md:relative`}
-    >
+      className={`z-30 h-full min-w-64 ${isOpen ? "flex" : "hidden"} overflow-y-auto absolute
+        md:block md:relative`}>
       <ul
         id="sidebar-list"
         className="h-full overflow-y-auto flex bg-slate-200 p-0 m-0 text-center
