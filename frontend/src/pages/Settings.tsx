@@ -48,11 +48,11 @@ const Settings = () => {
       // Show success message before redirection
     toast.success("Account deleted successfully!");
 
-      // Wait for a second to allow the toast to show, then redirect
+      // Wait for less than a second to allow the toast to show, then redirect
     setTimeout(() => {
       // Redirect the user to the signup page
       window.location.href = "/signup";
-    }, 2000); // 1 second delay
+    }, 700); // 0.7 second delay
   } catch (err: any) {
     setError(
       err.response?.data?.message ||
@@ -166,8 +166,8 @@ const Settings = () => {
           <div className="bg-white rounded-lg p-6 w-80">
             <h2 className="text-lg font-bold mb-4">Confirm Account Deletion</h2>
             <p className="mb-4">
-              Are you sure you want to delete your account? This action cannot
-              be undone.
+              ⚠️Are you sure you want to delete your account? This action cannot
+              be undone❗
             </p>
             <div className="flex justify-between">
               <button
