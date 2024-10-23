@@ -46,31 +46,40 @@ const Settings = () => {
       });
   
       // Show success message before redirection
-    toast.success("Account deleted successfully!");
+      toast.success("Account deleted successfully!");
 
       // Wait for less than a second to allow the toast to show, then redirect
-    setTimeout(() => {
+      setTimeout(() => {
       // Redirect the user to the signup page
-      window.location.href = "/signup";
-    }, 700); // 0.7 second delay
-  } catch (err: any) {
-    setError(
-      err.response?.data?.message ||
-      err.message ||
-      "An error occurred while deleting the account."
-    );
-  }
-};
+        window.location.href = "/signup";
+      }, 700); // 0.7 second delay
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "An error occurred while deleting the account."
+      );
+    }
+  };
 
   const handleEditUserData = async () => {
     try {
-      // Send request to update user data
-      await axios.patch(
-        "http://127.0.0.1:5000/user",
-        { name: newName, email: newEmail },
-        { withCredentials: true }
-      );
-      setUserData({ name: newName, email: newEmail });
+      // Create an object with only provided fields
+      const updatedData: { name?: string; email?: string } = {};
+      if (newName) updatedData.name = newName;
+      if (newEmail) updatedData.email = newEmail;
+
+      // Check if there is any data to update
+      if (Object.keys(updatedData).length > 0) {
+        // Send request to update user data
+        await axios.patch(
+          "http://127.0.0.1:5000/user",
+          updatedData,
+          { withCredentials: true }
+        );
+      // combing both objects together
+      setUserData((prevData) => ({ ...prevData, ...updatedData }));
+    }
       setEditMode(null); // Close modal after saving changes
     } catch (err: any) {
       setError(
