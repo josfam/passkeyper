@@ -5,29 +5,42 @@ import {
 	Form,
 } from '../components/ui/form'
 import PasswordOptions from './PasswordOptions'
-import { MIN_PASSWORD_LEN } from '../utils/passwords/Constants'
+import PassphraseOptions from './PassphraseOptions'
+import { DEFAULT_SEPARATOR, MIN_PASSPHRASE_LEN, MIN_PASSWORD_LEN } from '../utils/passwords/Constants'
 
 const PasswordGeneratorForm = () => {
 	// initial state, and functions to change state
 	const [passwordType, setPasswordType] = useState('password')
 	const [password, setPassword] = useState('');
 	const [highlightPasswordArea, setHighlightPasswordArea] = useState(false);
-	const [regenerateTrigger, setRegenerateTrigger] = useState(0);
+	const [newPasswordTrigger, setNewPasswordTrigger] = useState(0);
+	const [newPassphraseTrigger, setNewPassphraseTrigger] = useState(0);
 
-	const form: UseFormReturn<{ length: number; }, undefined> = useForm({
+	const form: UseFormReturn<{ passwordLength: number; passphraseLength: number; separator: string }, undefined> = useForm({
 		defaultValues: {
-			length: MIN_PASSWORD_LEN,
+			passwordLength: MIN_PASSWORD_LEN,
+			passphraseLength: MIN_PASSPHRASE_LEN,
+			separator: DEFAULT_SEPARATOR
 		}
 	})
 
 	// handling state for radio buttons for password type
 	const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setPasswordType(e.target.value)
+		if (passwordType === 'password') {
+			regeneratePassword()
+		} else {
+			regeneratePassphrase()
+		}
 	}
 
 	// Force a regeneration of the password by updating regenerate trigger
 	const regeneratePassword = () => {
-		setRegenerateTrigger(prev => prev + 1);
+		setNewPasswordTrigger(prev => prev + 1);
+	}
+	// Force a regneration of the passphrase by updating regenerate trigger
+	const regeneratePassphrase = () =>  {
+		setNewPassphraseTrigger(prev => prev + 1);
 	}
 
 	// copying the password
@@ -35,7 +48,9 @@ const PasswordGeneratorForm = () => {
 		navigator.clipboard.writeText(password)
 		.then(() => {
 			setHighlightPasswordArea(true)
-			toast.success('Password copied to the clipboard',{
+			toast.success(`${
+				passwordType.charAt(0).toUpperCase() + passwordType.slice(1)
+			} copied to the clipboard`,{
 				autoClose: 1500,
 				pauseOnFocusLoss: false,
 				hideProgressBar: true,
@@ -57,7 +72,8 @@ const PasswordGeneratorForm = () => {
 					border border-slate-400 min-w-96 md:w-3/4'>
 					<Form {...form}>
 						{/* password display area */}
-						<div className={`bg-slate-100 border w-full min-h-16 rounded-lg p-4 text-2xl
+						<div className={`bg-slate-100 border w-full flex items-center justify-center overflow-y-scroll rounded-lg p-4 text-2xl
+							${passwordType === 'passphrase' ? 'h-32': ''}
 							text-center text-sky-900 break-words ${highlightPasswordArea ? 'bg-slate-200': ''} select-all`}>
 							{password}
 						</div>
@@ -87,25 +103,33 @@ const PasswordGeneratorForm = () => {
 							</div>
 							{ passwordType === 'password' ? (
 								<>
-								{/* handle password generation and options */}
-									{<PasswordOptions
+									{/* show password generation options */}
+									<PasswordOptions
 									setPassword={setPassword}
 									form={form}
-									regenerateTrigger={regenerateTrigger} // Force a refresh by updating the trigger
-									/>}
+									newPasswordTrigger={newPasswordTrigger} // Force a refresh by updating the trigger
+									/>
 								</>
 								) : (
-									<>
-									</>
+								<>
+									{/* show passphrase generation options */}
+									<PassphraseOptions
+									setPassword={setPassword}
+									form={form}
+									newPassphraseTrigger={newPassphraseTrigger}
+									/>
+								</>
 								)
 							}
 						</div>
-						<div className='w-full flex flex-col-reverse gap-5 md:flex md:flex-row mt-4 sm:mt-0'>
+						<div className='w-full flex flex-col-reverse gap-5 md:flex md:flex-row mt-6'>
 							<button
 								className='btn-primary btn-secondary sm:max-lg:mb-5'
 								onMouseDown={() => {setHighlightPasswordArea(true)}}
 								onMouseUp={() => {setHighlightPasswordArea(false)}}
-								onClick={() => regeneratePassword()}
+								onClick={
+									() => passwordType === 'password' ? regeneratePassword() : regeneratePassphrase()
+								}
 								>
 									Regenerate
 							</button>

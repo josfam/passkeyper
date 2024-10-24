@@ -16,11 +16,11 @@ import { Input } from '../components/ui/input'
 
 interface passwordOptionProps {
 	setPassword: React.Dispatch<React.SetStateAction<string>>
-	form: UseFormReturn<{ length: number; }, undefined>
-	regenerateTrigger: number
+	form: UseFormReturn<{ passwordLength: number; passphraseLength: number; separator: string }, undefined>
+	newPasswordTrigger: number
 }
 
-const PasswordOptions = ({ setPassword, form, regenerateTrigger} :passwordOptionProps) => {
+const PasswordOptions = ({ setPassword, form, newPasswordTrigger} :passwordOptionProps) => {
 	// initial state, and functions to change state
 	const [hasSpecialChars, setHasSpecialChars] = useState(true)
 	const [passwordLength, setPasswordLength] = useState(MIN_PASSWORD_LEN)
@@ -65,14 +65,14 @@ const PasswordOptions = ({ setPassword, form, regenerateTrigger} :passwordOption
 
 	useEffect(() => {
 		getPassword(passwordLength);
-	}, [getPassword, passwordLength, regenerateTrigger])
+	}, [getPassword, passwordLength, newPasswordTrigger])
 
 	return (
 		<div className='flex flex-col gap-6'>
 			{/* password length */}
 			<FormField
 				control={form.control}
-				name="length"
+				name="passwordLength"
 				render={({ field }) => (
 					<FormItem className='w-full'>
 						<FormLabel className='text-xl ml-3'>Length</FormLabel>
