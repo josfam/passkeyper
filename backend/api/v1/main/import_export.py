@@ -32,7 +32,6 @@ def export_data():
             # Manually convert SQLAlchemy objects to a dictionary
             data_list = [
                 {
-                    'id': item.id,
                     'name': item.name,
                     'username': item.username,
                     'password': item.password,
@@ -51,11 +50,11 @@ def export_data():
             writer = csv.writer(output)
             
             # Write CSV header based on your model fields
-            writer.writerow(['id', 'name', 'username', 'password', 'url', 'favicon_url', 'notes', 'created_at', 'updated_at'])
+            writer.writerow(['name', 'username', 'password', 'url', 'favicon_url', 'notes', 'created_at', 'updated_at'])
 
             # Write data rows
             for item in data:
-                writer.writerow([item.id, item.name, item.username, item.password, item.url, item.favicon_url, item.notes, item.created_at, item.updated_at])
+                writer.writerow([item.name, item.username, item.password, item.url, item.favicon_url, item.notes, item.created_at, item.updated_at])
 
             output.seek(0)
             return Response(output, mimetype="text/csv", headers={"Content-Disposition": "attachment;filename=exported_data.csv"})
