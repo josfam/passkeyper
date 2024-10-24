@@ -46,38 +46,55 @@ const Settings = () => {
       });
   
       // Show success message before redirection
-    toast.success("Account deleted successfully!");
+      toast.success("Account deleted successfully!");
 
-      // Wait for a second to allow the toast to show, then redirect
-    setTimeout(() => {
+      // Wait for less than a second to allow the toast to show, then redirect
+      setTimeout(() => {
       // Redirect the user to the signup page
-      window.location.href = "/signup";
-    }, 2000); // 1 second delay
-  } catch (err: any) {
-    setError(
-      err.response?.data?.message ||
-      err.message ||
-      "An error occurred while deleting the account."
-    );
-  }
-};
-
-  const handleEditUserData = async () => {
-    try {
-      // Send request to update user data
-      await axios.patch(
-        "http://127.0.0.1:5000/user",
-        { name: newName, email: newEmail },
-        { withCredentials: true }
-      );
-      setUserData({ name: newName, email: newEmail });
-      setEditMode(null); // Close modal after saving changes
+        window.location.href = "/signup";
+      }, 700); // 0.7 second delay
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "An error occurred while updating user data"
+        err.message ||
+        "An error occurred while deleting the account."
       );
+    }
+  };
+
+  const handleEditUserData = async () => {
+    const updatedData: { name?: string; email?: string } = {};
+    if (editMode == 'name' && newName) {
+      updatedData.name = newName;
+    } else if (editMode == 'email' && newEmail) {
+      updatedData.email = newEmail;
+    }
+    try {
+      // Check if there is any data to update
+      if (Object.keys(updatedData).length > 0) {
+        // Send request to update user data
+        const response = await axios.patch(
+          "http://127.0.0.1:5000/user",
+          updatedData,
+          { withCredentials: true }
+        );
+        toast.success("Profile updated successfully!");
+
+        // combing both objects together
+        setUserData((prevData) => ({ ...prevData, ...updatedData }));
+        setEditMode(null); // Close modal after saving changes
+    }
+      setEditMode(null); // Close modal after saving changes
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        if (editMode === 'name') {
+          toast.error("Username already exists");
+        } else if (editMode === 'email') {
+          toast.error("Email already exists");
+        }
+      } else {
+        toast.error("An error occurred while updating user data");
+      }
     }
   };
 
@@ -166,8 +183,8 @@ const Settings = () => {
           <div className="bg-white rounded-lg p-6 w-80">
             <h2 className="text-lg font-bold mb-4">Confirm Account Deletion</h2>
             <p className="mb-4">
-              Are you sure you want to delete your account? This action cannot
-              be undone.
+              ⚠️Are you sure you want to delete your account? This action cannot
+              be undone❗
             </p>
             <div className="flex justify-between">
               <button

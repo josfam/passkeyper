@@ -31,8 +31,14 @@ def update_user():
 
     if user:
         if 'name' in data:
+            existing_user = User.query.filter_by(username=data['name']).first()
+            if existing_user and existing_user.id != user_id:
+                return jsonify({"message": "Username already exists"}), 422
             user.username = data['name']
         if 'email' in data:
+            existing_user = User.query.filter_by(email=data['email']).first()
+            if existing_user and existing_user.id != user_id:
+                return jsonify({"message": "Email already exists"}), 422  # Unprocessable entry
             user.email = data['email']
 
         user.updated_at = func.now()

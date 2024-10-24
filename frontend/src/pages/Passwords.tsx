@@ -35,9 +35,11 @@ import {
   Wand2,
 } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
-import { useToast } from "../hooks/use-toast";
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 interface PasswordEntry {
   id: number;
@@ -69,53 +71,31 @@ const PasswordDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [ekSalt, setEkSalt] = useState<string | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
-    fetchPasswords();
     fetchEkSalt();
   }, []);
 
+  useEffect(() => {
+    if (ekSalt && masterPassword) {
+      fetchPasswords()
+    }
+  }, [ekSalt, masterPassword]);
+
   const fetchEkSalt = async () => {
     try {
-      console.log('Fetching ek_salt...');
       const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}internal/get-ek-salt`, {
         withCredentials: true,
       });
-      console.log('Response:', response.data);
 
       setEkSalt(response.data.ek_salt);
       setMasterPassword(response.data.password);
-      
-      console.log('Set ekSalt to:', response.data.ek_salt);
-      console.log('Set masterPassword to:', response.data.password);
+      return response.data;
+
     } catch (err) {
       console.error("Error fetching ek_salt:", err);
+      throw err;
     }
-  };
-
-  // tests decryption and encryption
-  const testEncryption = () => {
-    console.log('Testing encryption...'); 
-    console.log('ekSalt:', ekSalt); 
-    console.log('masterPassword:', masterPassword);
-    
-    const testText = "Hello World 123!";
-    console.log('Original text:', testText);
-    
-    const encrypted = encryptData(testText);
-    console.log('Encrypted:', encrypted);
-    
-    const decrypted = decryptData(encrypted);
-    console.log('Decrypted:', decrypted);
-    
-    toast({
-      title: "Encryption Test Results",
-      description: `Original: ${testText}
-  Encrypted: ${encrypted}
-  Decrypted: ${decrypted}
-  Test ${testText === decrypted ? 'PASSED ✅' : 'FAILED ❌'}`,
-    });
   };
 
   const fetchPasswords = async () => {
@@ -127,10 +107,7 @@ const PasswordDashboard: React.FC = () => {
       );
       
       const passwordsArray = response.data.passwords || [];
-      
-      // Add debug logging
-      console.log('Fetched passwords:', passwordsArray);
-      
+
       const decryptedPasswords = passwordsArray.map((password: PasswordEntry) => {
         try {
           const decrypted = {
@@ -138,20 +115,9 @@ const PasswordDashboard: React.FC = () => {
             username: decryptData(password.username),
             password: decryptData(password.password),
             notes: password.notes ? decryptData(password.notes) : '',
+            url: decryptData(password.url),
+            name: decryptData(password.name)
           };
-          console.log('Decrypted entry:', {
-            id: password.id,
-            original: {
-              username: password.username,
-              password: password.password,
-              notes: password.notes
-            },
-            decrypted: {
-              username: decrypted.username,
-              password: decrypted.password,
-              notes: decrypted.notes
-            }
-          });
           return decrypted;
         } catch (error) {
           console.error(`Error decrypting password ${password.id}:`, error);
@@ -176,7 +142,6 @@ const PasswordDashboard: React.FC = () => {
   );
 
   const handleEdit = (password: PasswordEntry) => {
-    console.log('Password being edited:', password);
     setEditingPassword(password);
     setIsEditModalOpen(true);
   };
@@ -266,7 +231,7 @@ const PasswordDashboard: React.FC = () => {
           padding: CryptoJS.pad.Pkcs7
         }
       );
-      
+
       // Convert to UTF8 string
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (error) {
@@ -284,8 +249,8 @@ const PasswordDashboard: React.FC = () => {
         username: encryptData(updatedPassword.username),
         password: encryptData(updatedPassword.password),
         notes: updatedPassword.notes ? encryptData(updatedPassword.notes) : '',
-        url: updatedPassword.url,
-        name: updatedPassword.name
+        url: encryptData(updatedPassword.url),
+        name: encryptData(updatedPassword.name)
       };
 
       const method = updatedPassword.id === 0 ? 'post' : 'patch';
@@ -304,51 +269,39 @@ const PasswordDashboard: React.FC = () => {
       await fetchPasswords();
 
       setIsEditModalOpen(false);
-      toast({
-        title: `Password ${updatedPassword.id === 0 ? 'Added' : 'Updated'}`,
-        description: `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}.`,
-      });
+      toast.success(
+        `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}`
+      );
     } catch (error) {
       console.error('Error saving password:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save the password. Please try again.",
-        variant: "destructive",
-      });
+      toast.error('Failed to save the password. Please try again.');
     }
   };
     
 
-const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
-  try {
-    if (!password || typeof password.id === 'undefined') {
-      throw new Error('Invalid password object');
+  const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
+    try {
+      if (!password || typeof password.id === 'undefined') {
+        throw new Error('Invalid password object');
+      }
+
+      await axios.delete(
+        `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
+        { withCredentials: true }
+      );
+
+      await fetchPasswords();
+
+      if (closeModal) {
+        setIsEditModalOpen(false);
+      }
+
+      toast.success('The password has been moved to trash.');
+    } catch (error) {
+      console.error("Error moving password to trash:", error);
+      toast.error('Failed to move the password to trash.');
     }
-
-    await axios.delete(
-      `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
-      { withCredentials: true }
-    );
-
-    await fetchPasswords();
-
-    if (closeModal) {
-      setIsEditModalOpen(false);
-    }
-
-    toast({
-      title: "Moved to Trash",
-      description: "The password has been moved to trash.",
-    });
-  } catch (error) {
-    console.error("Error moving password to trash:", error);
-    toast({
-      title: "Error",
-      description: "Failed to move the password to trash.",
-      variant: "destructive",
-    });
-  }
-};
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -362,19 +315,12 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
       .writeText(text)
       .then(() => {
         setCopiedField(field);
-        toast({
-          title: "Copied to clipboard",
-          description: `${field} has been copied to your clipboard.`,
-        });
+        toast.success(`${field} has been copied to your clipboard.`);
         setTimeout(() => setCopiedField(null), 2000);
       })
       .catch((err) => {
         console.error("Failed to copy text: ", err);
-        toast({
-          title: "Copy failed",
-          description: "Failed to copy text to clipboard.",
-          variant: "destructive",
-        });
+        toast.error('Failed to copy text to clipboard.');
       });
   };
 
@@ -408,10 +354,7 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
     }
     setEditingPassword((prev) => (prev ? { ...prev, password } : null));
     setShowPassword(true);
-    toast({
-      title: "Password generated",
-      description: "A new strong password has been generated.",
-    });
+    toast.success('A new strong password has been generated.');
   };
 
   if (loading)
@@ -426,7 +369,6 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Passwords</h1>
-        <Button onClick={testEncryption} className="mr-2">Test Encryption</Button> 
         <Button onClick={handleAddPassword}>Add Password</Button>
       </div>
       <div className="flex justify-between items-center mb-4">
@@ -490,16 +432,10 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('Dropdown trash clicked, password:', password); // Debug log
                         if (password && typeof password.id !== 'undefined') {
                           handleMoveToTrash(password, false);
                         } else {
-                          console.log('Invalid password from dropdown:', password); // Debug log
-                          toast({
-                            title: "Error",
-                            description: "Cannot delete this password - invalid ID.",
-                            variant: "destructive",
-                          });
+                          toast.error('Cannot delete this password - invalid ID.');
                         }
                       }}
                     >
@@ -517,10 +453,10 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
         <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>
-            {editingPassword ? (
-              <>Edit Password (ID: {editingPassword.id})</>
+            {editingPassword && editingPassword.id > 0 ? (
+              <>Edit A Password Entry</>
             ) : (
-              "Add Password"
+              "Add A Password Entry"
             )}
           </DialogTitle>
         </DialogHeader>
@@ -659,15 +595,9 @@ const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = 
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();
-                      console.log('Trash button clicked, editingPassword:', editingPassword);
                       if (editingPassword && editingPassword.id) {
                         handleMoveToTrash(editingPassword, true);
-                      } else {console.log('Invalid password object:', editingPassword); // Debug log
-                        toast({
-                          title: "Error",
-                          description: "Cannot delete an unsaved password.",
-                          variant: "destructive",
-                        });
+                      } else {toast.error('Cannot delete an unsaved password.');
                       }
                     }}
                   >

@@ -7,6 +7,7 @@ from .user import user_bp
 from .password import password_bp
 from .trash import trash_bp
 from .internalApi import internal_api
+from .import_export import import_export_bp
 
 main_bp = Blueprint("main", __name__)
 
@@ -16,3 +17,4 @@ main_bp.register_blueprint(user_bp)
 main_bp.register_blueprint(password_bp)
 main_bp.register_blueprint(trash_bp)
 main_bp.register_blueprint(internal_api)
+main_bp.register_blueprint(import_export_bp)
