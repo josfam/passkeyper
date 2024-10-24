@@ -23,6 +23,8 @@ import ServerErrorPage from "./pages/ServerErrorPage";
 import "./styles/App.css";
 import "./styles/base.css";
 import HamburgerBtn from "./components/buttons/HamburgerBtn";
+import { Toaster } from "@/components/ui/toaster"
+
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
@@ -151,6 +153,7 @@ const App: React.FC = () => {
             <Route path='/dashboard' element={<ProtectedRoute element={<SecurityDashboard />} />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          <Toaster />
         </div>
       </div>
 	  </>

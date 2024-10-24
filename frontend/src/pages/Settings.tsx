@@ -63,30 +63,38 @@ const Settings = () => {
   };
 
   const handleEditUserData = async () => {
+    const updatedData: { name?: string; email?: string } = {};
+    if (editMode == 'name' && newName) {
+      updatedData.name = newName;
+    } else if (editMode == 'email' && newEmail) {
+      updatedData.email = newEmail;
+    }
     try {
-      // Create an object with only provided fields
-      const updatedData: { name?: string; email?: string } = {};
-      if (newName) updatedData.name = newName;
-      if (newEmail) updatedData.email = newEmail;
-
       // Check if there is any data to update
       if (Object.keys(updatedData).length > 0) {
         // Send request to update user data
-        await axios.patch(
+        const response = await axios.patch(
           "http://127.0.0.1:5000/user",
           updatedData,
           { withCredentials: true }
         );
-      // combing both objects together
-      setUserData((prevData) => ({ ...prevData, ...updatedData }));
+        toast.success("Profile updated successfully!");
+
+        // combing both objects together
+        setUserData((prevData) => ({ ...prevData, ...updatedData }));
+        setEditMode(null); // Close modal after saving changes
     }
       setEditMode(null); // Close modal after saving changes
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "An error occurred while updating user data"
-      );
+      if (err.response?.status === 422) {
+        if (editMode === 'name') {
+          toast.error("Username already exists");
+        } else if (editMode === 'email') {
+          toast.error("Email already exists");
+        }
+      } else {
+        toast.error("An error occurred while updating user data");
+      }
     }
   };
 
