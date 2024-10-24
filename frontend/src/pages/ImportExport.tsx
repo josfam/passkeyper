@@ -11,6 +11,9 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { Upload, Download } from "lucide-react";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
 type FileType = "json" | "csv";
 
@@ -69,58 +72,29 @@ const ImportExportPage: React.FC = () => {
     return csvRows.join("\n");
   };
 
-  const handleExport = () => {
-    if (!exportData.trim()) {
-      setMessage("Please enter some data to export.");
-      return;
-    }
-
+  const handleExport = async () => {
     try {
-      let parsedData: DataObject[];
-
-      // Try to parse the input as JSON first
-      try {
-        parsedData = JSON.parse(exportData);
-        if (!Array.isArray(parsedData)) {
-          parsedData = [parsedData];
-        }
-      } catch {
-        // If it's not valid JSON, try to parse as CSV
-        parsedData = parseCSV(exportData);
-      }
-
-      let dataToExport: string;
-      let filename: string;
-
-      if (exportFileType === "json") {
-        dataToExport = JSON.stringify(parsedData, null, 2);
-        filename = "exported_data.json";
-      } else {
-        dataToExport = convertToCSV(parsedData);
-        filename = "exported_data.csv";
-      }
-
-      const blob = new Blob([dataToExport], {
-        type:
-          exportFileType === "json"
-            ? "application/json"
-            : "text/csv;charset=utf-8;",
+      const response = await axios.get(`${API_URL}/export`, {
+        params: { fileType: exportFileType },
+        responseType: "blob", // Ensures we get the data as a binary blob
+        withCredentials: true, // Include credentials like cookies
       });
-      const url = URL.createObjectURL(blob);
+  
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = `exported_data.${exportFileType}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
       setMessage("Data exported successfully!");
     } catch (error) {
-      setMessage(
-        `Error exporting data. Please ensure it's valid JSON or CSV data.`
-      );
+      setMessage("Error exporting data.");
+      console.error("Error exporting data:", error);
     }
   };
+  
 
   return (
     <div className="container mx-auto p-4 space-y-8">
@@ -186,12 +160,6 @@ const ImportExportPage: React.FC = () => {
                   <SelectItem value="csv">CSV</SelectItem>
                 </SelectContent>
               </Select>
-              <textarea
-                className="w-full h-24 p-2 text-sm border rounded mb-2"
-                value={exportData}
-                onChange={(e) => setExportData(e.target.value)}
-                placeholder={`Enter JSON or CSV data to export...`}
-              />
               <Button size="sm" onClick={handleExport}>
                 <Download className="mr-1 h-3 w-3" /> Export{" "}
                 {exportFileType.toUpperCase()}
