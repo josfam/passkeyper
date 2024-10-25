@@ -1,10 +1,10 @@
-import { forwardRef } from 'react';
+import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { Button } from '../ui/button';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // Interface for typing props
-interface SidebarBtnProps {
+interface SidebarBtnProps extends ButtonHTMLAttributes<HTMLButtonElement>{
 	buttonIcon: IconProp;
 	buttonLabel: string;
 	pageIsInView: boolean;

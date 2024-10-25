@@ -71,13 +71,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onLogout }) => {
             </Link>
           </li>
           <li>
-            <button className="w-full" onClick={onLogout}>
               <SidebarBtn
                 pageIsInView={false}
                 buttonIcon={faRightFromBracket}
                 buttonLabel="Logout"
+				onClick={onLogout}
               />
-            </button>
           </li>
         </div>
       </ul>
