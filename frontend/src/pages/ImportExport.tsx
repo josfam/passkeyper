@@ -28,26 +28,37 @@ const ImportExportPage: React.FC = () => {
   const [importFileType, setImportFileType] = useState<FileType>("json");
   const [exportFileType, setExportFileType] = useState<FileType>("json");
 
-  const handleImport = (event: ChangeEvent<HTMLInputElement>) => {
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+  const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const parsedData =
-          importFileType === "json" ? JSON.parse(content) : parseCSV(content);
-        setImportedData(Array.isArray(parsedData) ? parsedData : [parsedData]);
-        setMessage("Data imported successfully!");
-      } catch (error) {
-        setMessage(
-          `Error importing data. Please ensure it's a valid ${importFileType.toUpperCase()} file.`
-        );
-      }
-    };
-    reader.readAsText(file);
+    // File size limiting logic
+    if (file.size > MAX_FILE_SIZE) {
+      setMessage("File is too large. Maximum allowed size is 5 MB.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileType', importFileType);
+  
+    try {
+      const response = await axios.post(`${API_URL}/import`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      });
+  
+      setMessage(response.data.message || "Data imported successfully!");
+    } catch (error) {
+      setMessage("Error importing data. Please try again.");
+      console.error("Error importing data:", error);
+    }
   };
+  
 
   const parseCSV = (csvString: string): DataObject[] => {
     const lines = csvString.trim().split("\n");
@@ -115,12 +126,6 @@ const ImportExportPage: React.FC = () => {
                   <SelectItem value="csv">CSV</SelectItem>
                 </SelectContent>
               </Select>
-              <Input
-                type="file"
-                onChange={handleImport}
-                accept={`.${importFileType}`}
-                className="w-2/4 text-sm"
-              />
               <Button
                 size="sm"
                 onClick={() =>

@@ -4,7 +4,6 @@ from flask import Blueprint, Flask, jsonify, request, session, Response
 import csv
 import json
 from io import StringIO
-from werkzeug.utils import secure_filename
 
 
 import_export_bp = Blueprint('import_export', __name__)
@@ -12,7 +11,49 @@ import_export_bp = Blueprint('import_export', __name__)
 
 @import_export_bp.route('/import', methods=['POST'])
 def import_data():
-    return jsonify({"message": "Imported data successfuly!"}), 200
+    """Imports user data as CSV/JSON"""
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        file = request.files.get('file')
+        if not file:
+            return jsonify({"error": "No file provided"}), 400
+
+        file_type = request.form.get('fileType', 'json')
+        file_content = file.read().decode('utf-8')
+
+        if file_type == 'json':
+            data = json.loads(file_content)
+        elif file_type == 'csv':
+            data = []
+            csv_reader = csv.DictReader(StringIO(file_content))
+            for row in csv_reader:
+                data.append(row)
+        else:
+            return jsonify({"error": "Invalid file type"}), 400
+
+        # Insert the data into the database
+        for entry in data:
+            new_entry = PasswordEntry(
+                user_id=user_id,
+                name=entry.get('name'),
+                username=entry.get('username'),
+                password=entry.get('password'),
+                url=entry.get('url'),
+                favicon_url=entry.get('favicon_url'),
+                notes=entry.get('notes'),
+                created_at=entry.get('created_at'),
+                updated_at=entry.get('updated_at')
+            )
+            db.session.add(new_entry)
+
+        db.session.commit()
+
+        return jsonify({"message": "Data imported successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @import_export_bp.route('/export', methods=['GET'])
