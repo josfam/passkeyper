@@ -48,7 +48,7 @@ def restore_from_trash(pass_ent_id):
                         }), 500
 
 
-@trash_bp.route('/password/<int:pass_ent_id>', methods=['DELETE'])
+@trash_bp.route('/password/<int:pass_ent_id>/permanent', methods=['DELETE'])
 def perm_del(pass_ent_id):
     """
     permanently deletes a password entry existing in trash
