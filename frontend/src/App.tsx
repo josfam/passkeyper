@@ -24,9 +24,22 @@ import "./styles/App.css";
 import "./styles/base.css";
 import HamburgerBtn from "./components/buttons/HamburgerBtn";
 import { Toaster } from "@/components/ui/toaster"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // Data is considered fresh for 5 minutes
+      cacheTimeMs: 1000 * 60 * 30, // Cache is kept for 30 minutes
+      refetchOnWindowFocus: true,
+      retry: 1,
+    },
+  },
+})
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -100,6 +113,7 @@ const App: React.FC = () => {
 
     return (
 		<>
+    <QueryClientProvider client={queryClient}>
 	    <ToastContainer></ToastContainer> {/* toast messages */}
 		<div className="flex flex-col h-screen overflow-hidden md:flex-row">
         {isAuthenticated && !shouldHideSidebar && (
@@ -156,6 +170,8 @@ const App: React.FC = () => {
           <Toaster />
         </div>
       </div>
+      <ReactQueryDevtools initialIsOpen={false} /> {/* Optional but recommended for development */}
+      </QueryClientProvider>
 	  </>
     );
   };
