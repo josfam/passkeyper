@@ -75,9 +75,9 @@ const PasswordOptions = ({ setPassword, form, newPasswordTrigger} :passwordOptio
 				name="passwordLength"
 				render={({ field }) => (
 					<FormItem className='w-full'>
-						<FormLabel className='text-xl ml-3'>Length</FormLabel>
+						<FormLabel className='text-lg ml-3'>Length</FormLabel>
 						<FormControl>
-							<Input type='number' autoFocus className={`h-12 text-xl border border-slate-400
+							<Input type='number' autoFocus className={`h-12 text-lg border border-slate-400
 								placeholder:text-slate-300 placeholder:font-light hover:border-slate-500 hover:border-2
 								${isBadLength ? ' hover:border-orange-700 border-2 border-orange-700' : ''}`}
 							placeholder='Length of the password' {...field}
@@ -98,7 +98,7 @@ const PasswordOptions = ({ setPassword, form, newPasswordTrigger} :passwordOptio
 			/>
 			{/* additional options */}
 			<div className='h-fit w-full p-3 flex flex-col gap-2 border border-slate-200 rounded-lg'>
-				<h2 className='text-xl m-0 font-medium'>Options</h2>
+				<h2 className='text-lg m-0 font-medium'>Options</h2>
 				<hr />
 				<div className='flex flex-col gap-x-8 gap-y-2 flex-wrap md:flex md:flex-row md:gap-y-2'>
 					<div className='flex gap-2'>
@@ -106,28 +106,28 @@ const PasswordOptions = ({ setPassword, form, newPasswordTrigger} :passwordOptio
 						checked={hasSpecialChars}
 						onChange={handleOptionsChange}
 						className='radial-check'/>
-						<label className='text-xl' htmlFor="special-chars">special characters</label>
+						<label className='text-lg' htmlFor="special-chars">special characters</label>
 					</div>
 					<div className='flex gap-2'>
 						<input type="checkbox" id="numbers" name='password-type' value='numbers'
 						checked={hasNumbers}
 						onChange={handleOptionsChange}
 						className='radial-check'/>
-						<label className='text-xl' htmlFor="numbers">numbers</label>
+						<label className='text-lg' htmlFor="numbers">numbers</label>
 					</div>
 					<div className='flex gap-2'>
 						<input type="checkbox" id="uppercase" name='password-type' value='numbers'
 						checked={hasUppercase}
 						onChange={handleOptionsChange}
 						className='radial-check'/>
-						<label className='text-xl' htmlFor="uppercase">uppercase</label>
+						<label className='text-lg' htmlFor="uppercase">uppercase</label>
 					</div>
 					<div className='flex gap-2'>
 						<input type="checkbox" id="lowercase" name='password-type' value='numbers'
 						checked={hasLowercase}
 						onChange={handleOptionsChange}
 						className='radial-check'/>
-						<label className='text-xl' htmlFor="lowercase">lowercase</label>
+						<label className='text-lg' htmlFor="lowercase">lowercase</label>
 					</div>
 				</div>
 			</div>

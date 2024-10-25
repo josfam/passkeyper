@@ -70,6 +70,7 @@ const PassphraseOptions = ({ setPassword, form, newPassphraseTrigger } :passphra
 	}, [newPassphraseTrigger, getPassphrase])
 
 	return (
+		<>
 		<div className='flex flex-col gap-4 md:flex-row sm:gap-6'>
 			{/* password length */}
 			<FormField
@@ -112,7 +113,7 @@ const PassphraseOptions = ({ setPassword, form, newPassphraseTrigger } :passphra
 						<FormControl>
 							<Input type='text' autoFocus className={`h-12 text-xl border border-slate-400
 								placeholder:text-slate-300 placeholder:font-light hover:border-slate-500 hover:border-2
-								${isBadLength ? ' hover:border-orange-700 border-2 border-orange-700' : ''}`}
+								${isBadSeparator ? ' hover:border-orange-700 border-2 border-orange-700' : ''}`}
 								placeholder='Separator between words' {...field}
 								onChange={(e) => {
 									field.onChange(e); // Track with react hook form
@@ -132,9 +133,13 @@ const PassphraseOptions = ({ setPassword, form, newPassphraseTrigger } :passphra
 							</p>
 						)}
 					</FormItem>
+					
 				)}
 			/>
+			
 		</div>
+		<hr className='mt-5'/> {/* For button separation */}
+		</>
 	);
 }
 

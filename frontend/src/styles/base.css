@@ -2,7 +2,7 @@
 
 /* dropdown elements */
 .dropdown-item {
-	@apply text-center text-xl p-4 w-full decoration-1 underline-offset-8 hover:underline
+	@apply text-center text-lg p-4 w-full decoration-1 underline-offset-8 hover:underline
 }
 
 /* for radial buttons and checkbox symbols */
@@ -13,13 +13,13 @@
 
 /* call to action primary button */
 .btn-primary {
-	@apply h-12 rounded-md flex w-full bg-sky-700 items-center justify-center text-white text-xl
+	@apply h-12 rounded-md flex w-full bg-sky-700 items-center justify-center text-white text-lg
 	hover:bg-sky-800 hover:text-white
 	active:bg-sky-950 active:text-white
 }
 
 .btn-secondary {
-	@apply bg-transparent border border-blue-400 text-sky-950 text-xl
+	@apply bg-transparent border border-blue-400 text-sky-950 text-lg
 }
 
 li {

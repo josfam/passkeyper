@@ -66,14 +66,14 @@ const PasswordGeneratorForm = () => {
 
 	return (
 		<div className='mx-auto pt-6 px-4'>
-			<h1 className="text-3xl font-bold mb-9 text-center text-sky-900">Password generator</h1>
-			<div className='container flex pb-12 flex-col items-center justify-center w-full h-full mb-10 md:mb-0 md:p-6'>
-				<div id='form-container' className='p-10 w-full rounded-lg flex flex-col justify-center gap-6
+			<h1 className="text-2xl font-bold mb-9 text-center text-sky-900">Password generator</h1>
+			<div className='container flex pb-12 flex-col items-center justify-center w-full h-full mb-10 md:mb-0 md:p-2'>
+				<div id='form-container' className='p-8 w-full rounded-lg flex flex-col justify-center gap-1
 					border border-slate-400 min-w-96 md:w-3/4'>
 					<Form {...form}>
 						{/* password display area */}
 						<div className={`bg-slate-100 border w-full flex items-center justify-center overflow-y-scroll rounded-lg p-4 text-2xl
-							${passwordType === 'passphrase' ? 'h-32': ''}
+							${passwordType === 'passphrase' ? 'md:h-32': ''}
 							text-center text-sky-900 break-words ${highlightPasswordArea ? 'bg-slate-200': ''} select-all`}>
 							{password}
 						</div>
@@ -82,7 +82,7 @@ const PasswordGeneratorForm = () => {
 							{/* password or passphrase */}
 							<div className='h-fit w-full p-3 flex flex-col gap-2 border border-slate-200 rounded-lg
 							sm:mb-4 sm:max-lg:w-full'>
-								<h2 className='text-xl m-0 font-medium'>Type</h2>
+								<h2 className='text-lg m-0 font-medium'>Type</h2>
 								<hr />
 								<div className='flex flex-wrap gap-x-8 gap-y-2'>
 									<div className='flex gap-2'>
