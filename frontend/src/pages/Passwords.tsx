@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -26,20 +27,18 @@ import {
 import {
   Lock,
   MoreHorizontal,
-  Clipboard,
-  Eye,
-  EyeOff,
   ExternalLink,
   Trash2,
-  Check,
   Wand2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 import axios from "axios";
-import CryptoJS from "crypto-js";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { filterPasswords, copyToClipboard, renderCopyButton } from '../utils/helpers';
+import { encryptData, decryptData } from '../utils/encrypt_decrypt';
 
 interface PasswordEntry {
   id: number;
@@ -59,87 +58,98 @@ interface PasswordEntry {
 }
 
 const PasswordDashboard: React.FC = () => {
-  const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingPassword, setEditingPassword] = useState<PasswordEntry | null>(
-    null
-  );
+  const [editingPassword, setEditingPassword] = useState<PasswordEntry | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [ekSalt, setEkSalt] = useState<string | null>(null);
-  const [masterPassword, setMasterPassword] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchEkSalt();
-  }, []);
-
-  useEffect(() => {
-    if (ekSalt && masterPassword) {
-      fetchPasswords()
-    }
-  }, [ekSalt, masterPassword]);
-
-  const fetchEkSalt = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_FLASK_APP_API_URL}internal/get-ek-salt`, {
-        withCredentials: true,
-      });
-
-      setEkSalt(response.data.ek_salt);
-      setMasterPassword(response.data.password);
+  // Fetch EK Salt
+  const { data: ekSaltData } = useQuery({
+    queryKey: ['ekSalt'],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_FLASK_APP_API_URL}internal/get-ek-salt`,
+        { withCredentials: true }
+      );
       return response.data;
+    },
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
 
-    } catch (err) {
-      console.error("Error fetching ek_salt:", err);
-      throw err;
-    }
-  };
-
-  const fetchPasswords = async () => {
-    setLoading(true);
-    try {
+  const { data: passwords = [], isLoading, isError } = useQuery({
+    queryKey: ['passwords'],
+    queryFn: async () => {
       const response = await axios.get(
         `${import.meta.env.VITE_FLASK_APP_API_URL}passwords`,
         { withCredentials: true }
       );
-      
-      const passwordsArray = response.data.passwords || [];
 
-      const decryptedPasswords = passwordsArray.map((password: PasswordEntry) => {
-        try {
-          const decrypted = {
-            ...password,
-            username: decryptData(password.username),
-            password: decryptData(password.password),
-            notes: password.notes ? decryptData(password.notes) : '',
-            url: decryptData(password.url),
-            name: decryptData(password.name)
-          };
-          return decrypted;
-        } catch (error) {
-          console.error(`Error decrypting password ${password.id}:`, error);
-          return password;
-        }
+      return response.data.passwords.map((password: PasswordEntry) => ({
+        ...password,
+        username: decryptData(password.username, ekSaltData.ek_salt, ekSaltData.password),
+        password: decryptData(password.password, ekSaltData.ek_salt, ekSaltData.password),
+        notes: password.notes ? decryptData(password.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
+        url: decryptData(password.url, ekSaltData.ek_salt, ekSaltData.password),
+        name: decryptData(password.name, ekSaltData.ek_salt, ekSaltData.password),
+      }));
+    },
+    enabled: !!ekSaltData,
+    staleTime: 30000,
+    cacheTime: 3600000,
+  });
+
+  // Save Password Mutation
+  const saveMutation = useMutation({
+    mutationFn: async (updatedPassword: PasswordEntry) => {
+      const dataToSend = {
+        ...updatedPassword,
+        username: encryptData(updatedPassword.username, ekSaltData.ek_salt, ekSaltData.password),
+        password: encryptData(updatedPassword.password, ekSaltData.ek_salt, ekSaltData.password),
+        notes: updatedPassword.notes ? encryptData(updatedPassword.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
+        url: encryptData(updatedPassword.url, ekSaltData.ek_salt, ekSaltData.password),
+        name: encryptData(updatedPassword.name, ekSaltData.ek_salt, ekSaltData.password),
+      };
+
+      const method = updatedPassword.id === 0 ? "post" : "patch";
+      const url = `${import.meta.env.VITE_FLASK_APP_API_URL}password${
+        updatedPassword.id === 0 ? "" : `/${updatedPassword.id}`
+      }`;
+
+      return axios({
+        method,
+        url,
+        data: dataToSend,
+        withCredentials: true,
       });
-      
-      setPasswords(decryptedPasswords);
-    } catch (err) {
-      setError("Failed to fetch password data");
-      console.error("Error fetching passwords:", err);
-    } finally {
-      setLoading(false);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['passwords'] });
+      setIsEditModalOpen(false);
+      toast.success(`Password ${editingPassword?.id === 0 ? 'added' : 'updated'} successfully`);
+    },
+    onError: () => {
+      toast.error("Failed to save the password. Please try again.");
     }
-  };
+  });
 
-  const filteredPasswords = passwords.filter(
-    (password) =>
-      password.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      password.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      password.url?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const trashMutation = useMutation({
+    mutationFn: async (passwordId: number) => {
+      return axios.delete(
+        `${import.meta.env.VITE_FLASK_APP_API_URL}password/${passwordId}/trash`,
+        { withCredentials: true }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['passwords'] });
+      toast.success("The password has been moved to trash.");
+    },
+    onError: () => {
+      toast.error("Failed to move the password to trash.");
+    }
+  });
 
   const handleEdit = (password: PasswordEntry) => {
     setEditingPassword(password);
@@ -150,156 +160,35 @@ const PasswordDashboard: React.FC = () => {
     setEditingPassword({
       id: 0,
       user_id: 0,
-      name: '',
-      username: '',
-      password: '',
-      url: '',
-      notes: '',
+      name: "",
+      username: "",
+      password: "",
+      url: "",
+      notes: "",
       in_trash: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       moved_at: null,
-      folder: '',
-      authenticator_key: '',
-      match_detection: '',
+      folder: "",
+      authenticator_key: "",
+      match_detection: "",
     });
     setIsEditModalOpen(true);
   };
 
-  const encryptData = (data: string): string => {
-    if (!ekSalt || !masterPassword || !data) return data;
-    
-    try {
-      // Generate encryption key
-      const salt = CryptoJS.enc.Hex.parse(ekSalt);
-      const key = CryptoJS.PBKDF2(masterPassword, salt, {
-        keySize: 256/32,
-        iterations: 1000
-      });
-      
-      // Generate random IV
-      const iv = CryptoJS.lib.WordArray.random(16);
-      
-      // Encrypt the data
-      const encrypted = CryptoJS.AES.encrypt(data, key, {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7
-      });
-      
-      // Combine IV and ciphertext
-      const combined = CryptoJS.lib.WordArray.create()
-        .concat(iv)
-        .concat(encrypted.ciphertext);
-      
-      // Return as base64 string
-      return combined.toString(CryptoJS.enc.Base64);
-    } catch (error) {
-      console.error('Encryption error:', error);
-      return data;
-    }
+  const handleSave = (updatedPassword: PasswordEntry) => {
+    saveMutation.mutate(updatedPassword);
   };
 
-  const decryptData = (encryptedData: string): string => {
-    if (!ekSalt || !masterPassword || !encryptedData) return encryptedData;
-    
-    try {
-      // Convert the combined base64 string back to WordArray
-      const combined = CryptoJS.enc.Base64.parse(encryptedData);
-      
-      // Extract IV and ciphertext
-      const iv = CryptoJS.lib.WordArray.create(combined.words.slice(0, 4));
-      const ciphertext = CryptoJS.lib.WordArray.create(
-        combined.words.slice(4),
-        combined.sigBytes - 16
-      );
-      
-      // Generate decryption key
-      const salt = CryptoJS.enc.Hex.parse(ekSalt);
-      const key = CryptoJS.PBKDF2(masterPassword, salt, {
-        keySize: 256/32,
-        iterations: 1000
-      });
-      
-      // Decrypt the data
-      const decrypted = CryptoJS.AES.decrypt(
-        { ciphertext: ciphertext },
-        key,
-        {
-          iv: iv,
-          mode: CryptoJS.mode.CBC,
-          padding: CryptoJS.pad.Pkcs7
-        }
-      );
-
-      // Convert to UTF8 string
-      return decrypted.toString(CryptoJS.enc.Utf8);
-    } catch (error) {
-      console.error('Decryption error:', error);
-      console.error('Encrypted data:', encryptedData);
-      console.error('Salt:', ekSalt);
-      return encryptedData;
+  const handleMoveToTrash = (password: PasswordEntry, closeModal: boolean = false) => {
+    if (!password || typeof password.id === "undefined") {
+      toast.error("Invalid password object");
+      return;
     }
-  };
 
-  const handleSave = async (updatedPassword: PasswordEntry) => {
-    try {
-      const dataToSend = {
-        ...updatedPassword,
-        username: encryptData(updatedPassword.username),
-        password: encryptData(updatedPassword.password),
-        notes: updatedPassword.notes ? encryptData(updatedPassword.notes) : '',
-        url: encryptData(updatedPassword.url),
-        name: encryptData(updatedPassword.name)
-      };
-
-      const method = updatedPassword.id === 0 ? 'post' : 'patch';
-      const url = `${import.meta.env.VITE_FLASK_APP_API_URL}password${
-        updatedPassword.id === 0 ? '' : `/${updatedPassword.id}`
-      }`;
-
-      const response = await axios({
-        method,
-        url,
-        data: dataToSend,
-        withCredentials: true,
-      });
-
-      // Update the passwords list with the new/updated password
-      await fetchPasswords();
-
+    trashMutation.mutate(password.id);
+    if (closeModal) {
       setIsEditModalOpen(false);
-      toast.success(
-        `The password has been successfully ${updatedPassword.id === 0 ? 'added' : 'updated'}`
-      );
-    } catch (error) {
-      console.error('Error saving password:', error);
-      toast.error('Failed to save the password. Please try again.');
-    }
-  };
-    
-
-  const handleMoveToTrash = async (password: PasswordEntry, closeModal: boolean = false) => {
-    try {
-      if (!password || typeof password.id === 'undefined') {
-        throw new Error('Invalid password object');
-      }
-
-      await axios.delete(
-        `${import.meta.env.VITE_FLASK_APP_API_URL}password/${password.id}/trash`,
-        { withCredentials: true }
-      );
-
-      await fetchPasswords();
-
-      if (closeModal) {
-        setIsEditModalOpen(false);
-      }
-
-      toast.success('The password has been moved to trash.');
-    } catch (error) {
-      console.error("Error moving password to trash:", error);
-      toast.error('Failed to move the password to trash.');
     }
   };
 
@@ -309,40 +198,6 @@ const PasswordDashboard: React.FC = () => {
     const { name, value } = e.target;
     setEditingPassword((prev) => (prev ? { ...prev, [name]: value } : null));
   };
-
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        setCopiedField(field);
-        toast.success(`${field} has been copied to your clipboard.`);
-        setTimeout(() => setCopiedField(null), 2000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy text: ", err);
-        toast.error('Failed to copy text to clipboard.');
-      });
-  };
-
-  const renderCopyButton = (text: string, field: string) => (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="ml-2"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        copyToClipboard(text, field);
-      }}
-    >
-      {copiedField === field ? (
-        <Check className="h-4 w-4" />
-      ) : (
-        <Clipboard className="h-4 w-4" />
-      )}
-    </Button>
-  );
 
   const generatePassword = () => {
     const length = 16;
@@ -354,16 +209,22 @@ const PasswordDashboard: React.FC = () => {
     }
     setEditingPassword((prev) => (prev ? { ...prev, password } : null));
     setShowPassword(true);
-    toast.success('A new strong password has been generated.');
+    toast.success("A new strong password has been generated.");
   };
 
-  if (loading)
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
-  if (error) return <div>Error: {error}</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading passwords</div>;
+  }
+
+  const filteredPasswords = filterPasswords(passwords, searchTerm);
 
   return (
     <div className="container mx-auto p-6">
@@ -432,11 +293,7 @@ const PasswordDashboard: React.FC = () => {
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (password && typeof password.id !== 'undefined') {
-                          handleMoveToTrash(password, false);
-                        } else {
-                          toast.error('Cannot delete this password - invalid ID.');
-                        }
+                        handleMoveToTrash(password, false);
                       }}
                     >
                       Move to Trash
@@ -451,25 +308,21 @@ const PasswordDashboard: React.FC = () => {
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>
-            {editingPassword && editingPassword.id > 0 ? (
-              <>Edit A Password Entry</>
-            ) : (
-              "Add A Password Entry"
-            )}
-          </DialogTitle>
-        </DialogHeader>
-        {editingPassword !== null && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSave(editingPassword);
-            }}
-          >
-            <div className="grid gap-4 py-4">
-              {/* Name Input */}
-              <div className="grid grid-cols items-center gap-4">
+          <DialogHeader>
+            <DialogTitle>
+              {editingPassword && editingPassword.id > 0
+                ? "Edit Password Entry"
+                : "Add Password Entry"}
+            </DialogTitle>
+          </DialogHeader>
+          {editingPassword && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSave(editingPassword);
+              }}
+            >
+              <div className="grid gap-4 py-4">
                 <div>
                   <Label htmlFor="name">Name</Label>
                   <Input
@@ -479,66 +332,59 @@ const PasswordDashboard: React.FC = () => {
                     onChange={handleInputChange}
                   />
                 </div>
-              </div>
 
-              {/* Username and Password Inputs */}
-              <div className="grid grid-cols-2 items-center gap-4">
-                {/* Username Input */}
-                <div>
-                  <Label htmlFor="username">Username</Label>
-                  <div className="flex">
-                    <Input
-                      className="text-base"
-                      id="username"
-                      name="username"
-                      value={editingPassword.username}
-                      onChange={handleInputChange}
-                    />
-                    {renderCopyButton(editingPassword.username, "Username")}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="username">Username</Label>
+                    <div className="flex">
+                      <Input
+                        id="username"
+                        name="username"
+                        value={editingPassword.username}
+                        onChange={handleInputChange}
+                      />
+                      {renderCopyButton(editingPassword.username, "Username", copiedField, setCopiedField)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <div className="flex relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={editingPassword.password}
+                        onChange={handleInputChange}
+                        className="pr-20"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={generatePassword}
+                        className="absolute right-16"
+                      >
+                        <Wand2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-8"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
+                      {renderCopyButton(editingPassword.password, "Password", copiedField, setCopiedField)}
+                    </div>
                   </div>
                 </div>
 
-                {/* Password Input */}
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <div className="flex relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      value={editingPassword.password}
-                      onChange={handleInputChange}
-                      className="pr-20 text-base"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={generatePassword}
-                      className="absolute right-16 top-0 bottom-0"
-                    >
-                      <Wand2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-8 top-0 bottom-0"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {renderCopyButton(editingPassword.password, "Password")}
-                  </div>
-                </div>
-              </div>
-
-              {/* URL Input */}
-              <div className="grid grid-cols items-center gap-4">
                 <div>
                   <Label htmlFor="url">URL</Label>
                   <div className="flex">
@@ -552,62 +398,53 @@ const PasswordDashboard: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       className="ml-2"
-                      onClick={() => window.open(editingPassword.url, '_blank')}
+                      onClick={() => window.open(editingPassword.url, "_blank")}
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
-                    {renderCopyButton(editingPassword.url, 'URL')}
+                    {renderCopyButton(editingPassword.url, "URL", copiedField, setCopiedField)}
                   </div>
                 </div>
-              </div>
 
-              {/* Notes Input */}
-              <div>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  value={editingPassword.notes}
-                  onChange={handleInputChange}
-                  rows={4}
-                />
-              </div>
-            </div>
-
-            {/* Dialog Footer with Action Buttons */}
-            <DialogFooter className="mt-6">
-              <div className="flex justify-between w-full">
                 <div>
-                  <Button type="submit" className="mr-2">
-                    Save
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsEditModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-                <div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (editingPassword && editingPassword.id) {
-                        handleMoveToTrash(editingPassword, true);
-                      } else {toast.error('Cannot delete an unsaved password.');
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    value={editingPassword.notes}
+                    onChange={handleInputChange}
+                    rows={4}
+                  />
                 </div>
               </div>
-            </DialogFooter>
-          </form>
-        )}
+
+              <DialogFooter className="mt-6">
+                <div className="flex justify-between w-full">
+                  <div>
+                    <Button type="submit" className="mr-2">
+                      Save
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsEditModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                  {editingPassword.id > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      type="button"
+                      onClick={() => handleMoveToTrash(editingPassword, true)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
