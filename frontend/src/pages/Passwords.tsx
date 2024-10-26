@@ -97,8 +97,8 @@ const PasswordDashboard: React.FC = () => {
       }));
     },
     enabled: !!ekSaltData,
-    staleTime: 30000,
-    cacheTime: 3600000,
+    staleTime: 1000,
+    cacheTime: 180000,
   });
 
   // Save Password Mutation
