@@ -19,13 +19,24 @@ def check_session():
 
 def register_google_oauth(app):
     """Register Google OAuth provider."""
+     # Verify config values are loaded
     try:
+        print("Initializing Google OAuth registration...")
+        client_id = app.config.get('CLIENT_ID')
+        client_secret = app.config.get('CLIENT_SECRET')
+        
+        if not client_id or not client_secret:
+            raise KeyError("CLIENT_ID or CLIENT_SECRET missing in config.")
+
         oauth.register(
             name='google',
-            client_id=app.config['CLIENT_ID'],
-            client_secret=app.config['CLIENT_SECRET'],
+            client_id=client_id,
+            client_secret=client_secret,
             server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
             client_kwargs={'scope': 'openid profile email'}
         )
+        print("Google OAuth registration completed successfully.")
     except KeyError as e:
-        print(f"Missing OAuth configuration for {str(e)}")
+        print(f"Missing OAuth configuration for: {str(e)}")
+    except Exception as e:
+        print(f"An error occurred during Google OAuth registration: {e}")
