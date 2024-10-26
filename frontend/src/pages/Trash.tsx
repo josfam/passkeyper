@@ -105,7 +105,7 @@ const PasswordTrashPage: React.FC = () => {
 
   const handleRestore = async (password: PasswordEntry) => {
     try {
-      await axios.post(`http://127.0.0.1:5000/password/${password.id}/restore`, {}, {
+      await axios.patch(`http://127.0.0.1:5000/password/${password.id}/restore`, {}, {
         withCredentials: true
       });
       setTrashedPasswords(trashedPasswords.filter((p) => p.id !== password.id));
