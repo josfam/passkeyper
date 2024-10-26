@@ -100,16 +100,24 @@ def get_passwords():
         # Pagination parameters: page and per_page with default int values
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        
+        # Get in_trash parameter from query
+        in_trash = request.args.get('in_trash', 'false').lower() == 'true'
 
-        # Querying the db to retieve all passwords linked to the user
-        passwords = PasswordEntry.query.filter_by(user_id=user_id,
-                                                  in_trash=False)
+        # Querying the db to retrieve passwords based on in_trash status
+        passwords = PasswordEntry.query.filter_by(
+            user_id=user_id,
+            in_trash=in_trash
+        )
 
         # Applying pagination using SQLAlchemy’s paginate feature --
         # error_out=False: Prevents an error if page num is too high
         # (e.g., requesting page 10 when only 5 pages exist)
-        paginated_passes = passwords.paginate(page=page, per_page=per_page,
-                                              error_out=False)
+        paginated_passes = passwords.paginate(
+            page=page, 
+            per_page=per_page,
+            error_out=False
+        )
 
         # Format the passwords to return
         password_list = [
@@ -134,8 +142,9 @@ def get_passwords():
             'has_prev': paginated_passes.has_prev
         }), 200
     except Exception as e:
-        return jsonify({"error":
-                        "An error occurred while retrieving passwords"}), 500
+        return jsonify({
+            "error": "An error occurred while retrieving passwords"
+        }), 500
 
 
 @password_bp.route('/password/<int:pass_ent_id>/trash', methods=['DELETE'])
