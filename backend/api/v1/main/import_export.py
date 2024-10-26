@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from backend.models.password import PasswordEntry
 from flask import Blueprint, Flask, jsonify, request, session, Response
+from backend.models import db
 import csv
 import json
 from io import StringIO
