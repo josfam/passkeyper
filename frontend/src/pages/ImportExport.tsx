@@ -126,6 +126,12 @@ const ImportExportPage: React.FC = () => {
                   <SelectItem value="csv">CSV</SelectItem>
                 </SelectContent>
               </Select>
+              <Input
+                type="file"
+                onChange={handleImport}
+                accept={`.${importFileType}`}
+                className="w-2/4 text-sm"
+              />
               <Button
                 size="sm"
                 onClick={() =>
