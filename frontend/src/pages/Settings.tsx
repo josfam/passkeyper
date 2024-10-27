@@ -46,7 +46,9 @@ const Settings = () => {
       });
   
       // Show success message before redirection
-      toast.success("Account deleted successfully!");
+      toast.success("Account deleted successfully!", {
+        autoClose: 2000
+      });
 
       // Wait for less than a second to allow the toast to show, then redirect
       setTimeout(() => {
@@ -78,7 +80,9 @@ const Settings = () => {
           updatedData,
           { withCredentials: true }
         );
-        toast.success("Profile updated successfully!");
+        toast.success("Profile updated successfully!", {
+          autoClose: 2000
+        });
 
         // combing both objects together
         setUserData((prevData) => ({ ...prevData, ...updatedData }));
@@ -88,12 +92,18 @@ const Settings = () => {
     } catch (err: any) {
       if (err.response?.status === 422) {
         if (editMode === 'name') {
-          toast.error("Username already exists");
+          toast.error("Username already exists", {
+            autoClose: 2000
+          });
         } else if (editMode === 'email') {
-          toast.error("Email already exists");
+          toast.error("Email already exists", {
+            autoClose: 2000
+          });
         }
       } else {
-        toast.error("An error occurred while updating user data");
+        toast.error("An error occurred while updating user data", {
+          autoClose: 2000
+        });
       }
     }
   };
