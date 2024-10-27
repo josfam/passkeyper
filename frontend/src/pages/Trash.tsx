@@ -42,7 +42,8 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
-import { useToast } from "../hooks/use-toast";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { copyToClipboard, renderCopyButton } from "../utils/helpers";
 import { decryptData } from "../utils/encrypt_decrypt";
@@ -75,7 +76,6 @@ const PasswordTrashPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
-  const { toast } = useToast();
   const [ekSalt, setEkSalt] = useState<string | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
 
@@ -163,16 +163,13 @@ const PasswordTrashPage: React.FC = () => {
       );
       setTrashedPasswords(trashedPasswords.filter((p) => p.id !== password.id));
       setIsPreviewModalOpen(false);
-      toast({
-        title: "Password Restored",
-        description: `${password.name} has been restored from the trash.`,
+      toast.success(`${password.name} has been restored from the trash.`, {
+        autoClose: 2000
       });
     } catch (err) {
       console.error("Error restoring password:", err);
-      toast({
-        title: "Restore Failed",
-        description: "Failed to restore the password. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to restore the password. Please try again.", {
+        autoClose: 2000
       });
     }
   };
@@ -187,18 +184,13 @@ const PasswordTrashPage: React.FC = () => {
       );
       setTrashedPasswords(trashedPasswords.filter((p) => p.id !== password.id));
       setIsPreviewModalOpen(false);
-      toast({
-        title: "Password Deleted",
-        description: `${password.name} has been permanently deleted.`,
-        variant: "destructive",
+      toast.success(`${password.name} has been permanently deleted.`, {
+        autoClose: 2000
       });
     } catch (err) {
       console.error("Error deleting password permanently:", err);
-      toast({
-        title: "Delete Failed",
-        description:
-          "Failed to delete the password permanently. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to delete the password permanently. Please try again.", {
+        autoClose: 2000
       });
     }
   };
@@ -210,17 +202,13 @@ const PasswordTrashPage: React.FC = () => {
       });
       setTrashedPasswords([]);
       setIsDeleteAllDialogOpen(false);
-      toast({
-        title: "All Passwords Deleted",
-        description: "All trashed passwords have been permanently deleted.",
-        variant: "destructive",
+      toast.success("All trashed passwords have been permanently deleted.", {
+        autoClose: 2000
       });
     } catch (err) {
       console.error("Error deleting all passwords:", err);
-      toast({
-        title: "Delete Failed",
-        description: "Failed to delete all passwords. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to delete all passwords. Please try again.", {
+        autoClose: 2000
       });
     }
   };
