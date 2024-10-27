@@ -52,72 +52,84 @@ function SecurityDashboard() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailBreaches, setEmailBreaches] = useState<string[]>([]);
-  const [passwordBreached, setPasswordBreached] = useState<boolean | null>(null);
+  const [emailChecked, setEmailChecked] = useState(false);
+  const [passwordBreached, setPasswordBreached] = useState<boolean | null>(
+    null
+  );
   const [weakPasswords, setWeakPasswords] = useState<string[]>([]);
   const [duplicatePasswords, setDuplicatePasswords] = useState<string[]>([]);
   const [passwords, setPasswords] = useState<PasswordData[]>([]);
 
-const [ekSalt, setEkSalt] = useState<string | null>(null);
-const [masterPassword, setMasterPassword] = useState<string | null>(null);
+  const [ekSalt, setEkSalt] = useState<string | null>(null);
+  const [masterPassword, setMasterPassword] = useState<string | null>(null);
 
-useEffect(() => {
-  fetchEkSalt();
-}, []);
+  useEffect(() => {
+    fetchEkSalt();
+  }, []);
 
-useEffect(() => {
-  if (ekSalt && masterPassword) {
-    fetchPasswords();
-  }
-}, [ekSalt, masterPassword]);
+  useEffect(() => {
+    if (ekSalt && masterPassword) {
+      fetchPasswords();
+    }
+  }, [ekSalt, masterPassword]);
 
-const fetchEkSalt = async () => {
-  try {
-    const response = await axios.get("http://127.0.0.1:5000/internal/get-ek-salt", {
-      withCredentials: true
-    });
-    setEkSalt(response.data.ek_salt);
-    setMasterPassword(response.data.password);
-    return response.data;
-  } catch (err) {
-    console.error("Error fetching ek_salt:", err);
-    throw err;
-  }
-};
+  const fetchEkSalt = async () => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:5000/internal/get-ek-salt",
+        {
+          withCredentials: true,
+        }
+      );
+      setEkSalt(response.data.ek_salt);
+      setMasterPassword(response.data.password);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching ek_salt:", err);
+      throw err;
+    }
+  };
 
-const fetchPasswords = async () => {
-  try {
-    const response = await axios.get("http://127.0.0.1:5000/passwords", {
-      withCredentials: true,
-      params: { in_trash: false }
-    });
-    const passwordsArray = response.data.passwords || [];
-    const decryptedPasswords = passwordsArray.map((password: PasswordEntry) => {
-      try {
-        const decrypted = {
-          ...password,
-          username: decryptData(password.username, ekSalt, masterPassword),
-          password: decryptData(password.password, ekSalt, masterPassword),
-          notes: password.notes ? decryptData(password.notes, ekSalt, masterPassword) : "",
-          url: decryptData(password.url, ekSalt, masterPassword),
-          name: decryptData(password.name, ekSalt, masterPassword)
-        };
-        return decrypted;
-      } catch (error) {
-        console.error(`Error decrypting password ${password.id}:`, error);
-        return password;
-      }
-    });
-    setPasswords(decryptedPasswords);
-  } catch (err) {
-    setError("Failed to fetch password data");
-    console.error("Error fetching passwords:", err);
-  } 
-};
+  const fetchPasswords = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/passwords", {
+        withCredentials: true,
+        params: { in_trash: false },
+      });
+      const passwordsArray = response.data.passwords || [];
+      const decryptedPasswords = passwordsArray.map(
+        (password: PasswordEntry) => {
+          try {
+            const decrypted = {
+              ...password,
+              username: decryptData(password.username, ekSalt, masterPassword),
+              password: decryptData(password.password, ekSalt, masterPassword),
+              notes: password.notes
+                ? decryptData(password.notes, ekSalt, masterPassword)
+                : "",
+              url: decryptData(password.url, ekSalt, masterPassword),
+              name: decryptData(password.name, ekSalt, masterPassword),
+            };
+            return decrypted;
+          } catch (error) {
+            console.error(`Error decrypting password ${password.id}:`, error);
+            return password;
+          }
+        }
+      );
+      setPasswords(decryptedPasswords);
+    } catch (err) {
+      setError("Failed to fetch password data");
+      console.error("Error fetching passwords:", err);
+    }
+  };
 
   const checkEmailBreaches = async (email: string) => {
     try {
       const response = await axios.get<BreachCheckResponse>(
-        `https://api.xposedornot.com/v1/check-email/${encodeURIComponent(email)}`
+        `https://api.xposedornot.com/v1/check-email/${encodeURIComponent(
+          email
+        )}`
       );
 
       if (response.data.breaches && response.data.breaches.length > 0) {
@@ -125,9 +137,11 @@ const fetchPasswords = async () => {
       } else {
         setEmailBreaches([]);
       }
+      setEmailChecked(true);
     } catch (error) {
       console.error("Error checking email breaches:", error);
       setEmailBreaches([]);
+      setEmailChecked(true);
     }
   };
 
@@ -162,7 +176,7 @@ const fetchPasswords = async () => {
 
   const checkDuplicatePasswords = () => {
     const passwordMap = new Map<string, string[]>();
-    
+
     passwords.forEach((pwd) => {
       if (passwordMap.has(pwd.password)) {
         passwordMap.get(pwd.password)!.push(pwd.name);
@@ -203,7 +217,10 @@ const fetchPasswords = async () => {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailChecked(false);
+                }}
               />
               <Button
                 className="bg-blue-600 hover:bg-blue-400 text-white"
@@ -212,23 +229,24 @@ const fetchPasswords = async () => {
                 Check
               </Button>
             </div>
-            {emailBreaches.length > 0 ? (
-              <Alert className="mt-4" variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Email Breach Detected</AlertTitle>
-                <AlertDescription>
-                  Your email was found in {emailBreaches.length} breach(es)
-                </AlertDescription>
-              </Alert>
-            ) : emailBreaches.length === 0 && email ? (
-              <Alert className="mt-4" variant="default">
-                <ShieldCheck className="h-4 w-4" />
-                <AlertTitle>No Breaches Found</AlertTitle>
-                <AlertDescription>
-                  Your email was not found in any known breaches.
-                </AlertDescription>
-              </Alert>
-            ) : null}
+            {emailChecked &&
+              (emailBreaches.length > 0 ? (
+                <Alert className="mt-4" variant="destructive">
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Email Breach Detected</AlertTitle>
+                  <AlertDescription>
+                    Your email was found in {emailBreaches.length} breach(es)
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="mt-4" variant="default">
+                  <ShieldCheck className="h-4 w-4" />
+                  <AlertTitle>No Breaches Found</AlertTitle>
+                  <AlertDescription>
+                    Your email was not found in any known breaches.
+                  </AlertDescription>
+                </Alert>
+              ))}
           </CardContent>
         </Card>
 
@@ -314,7 +332,7 @@ const fetchPasswords = async () => {
             >
               Analyze Passwords
             </Button>
-            {weakPasswords.length > 0 ? (
+            {weakPasswords.length > 0 && (
               <Alert className="mt-4" variant="destructive">
                 <Unlock className="h-4 w-4" />
                 <AlertTitle>Weak Passwords Detected</AlertTitle>
@@ -323,15 +341,7 @@ const fetchPasswords = async () => {
                   {weakPasswords.join(", ")}
                 </AlertDescription>
               </Alert>
-            ) : passwords.length > 0 && weakPasswords.length === 0 ? (
-              <Alert className="mt-4" variant="default">
-                <Lock className="h-4 w-4" />
-                <AlertTitle>All Passwords Are Strong</AlertTitle>
-                <AlertDescription>
-                  All of your passwords meet the strength criteria.
-                </AlertDescription>
-              </Alert>
-            ) : null}
+            )}
           </CardContent>
         </Card>
 
@@ -350,7 +360,7 @@ const fetchPasswords = async () => {
             >
               Check for Duplicates
             </Button>
-            {duplicatePasswords.length > 0 ? (
+            {duplicatePasswords.length > 0 && (
               <Alert className="mt-4" variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
                 <AlertTitle>Duplicate Passwords Detected</AlertTitle>
@@ -359,15 +369,7 @@ const fetchPasswords = async () => {
                   multiple times: {duplicatePasswords.join(", ")}
                 </AlertDescription>
               </Alert>
-            ) : passwords.length > 0 && duplicatePasswords.length === 0 ? (
-              <Alert className="mt-4" variant="default">
-                <ShieldCheck className="h-4 w-4" />
-                <AlertTitle>No Duplicate Passwords</AlertTitle>
-                <AlertDescription>
-                  Each of your passwords is unique across accounts.
-                </AlertDescription>
-              </Alert>
-            ) : null}
+            )}
           </CardContent>
         </Card>
       </div>
