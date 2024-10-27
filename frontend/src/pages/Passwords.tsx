@@ -33,6 +33,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import getFaviconUrl from "../utils/scraping/FaviconExtraction";
 import { Textarea } from "../components/ui/textarea";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -51,6 +52,7 @@ interface PasswordEntry {
   in_trash: boolean;
   created_at: string;
   updated_at: string;
+  favicon_url: string,
   moved_at: string | null;
   folder: string;
   authenticator_key: string;
@@ -94,6 +96,7 @@ const PasswordDashboard: React.FC = () => {
         notes: password.notes ? decryptData(password.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
         url: decryptData(password.url, ekSaltData.ek_salt, ekSaltData.password),
         name: decryptData(password.name, ekSaltData.ek_salt, ekSaltData.password),
+        favicon_url: decryptData(password.favicon_url, ekSaltData.ek_salt, ekSaltData.password),
       }));
     },
     enabled: !!ekSaltData,
@@ -111,6 +114,11 @@ const PasswordDashboard: React.FC = () => {
         notes: updatedPassword.notes ? encryptData(updatedPassword.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
         url: encryptData(updatedPassword.url, ekSaltData.ek_salt, ekSaltData.password),
         name: encryptData(updatedPassword.name, ekSaltData.ek_salt, ekSaltData.password),
+        faviconUrl: encryptData(
+          await getFaviconUrl(updatedPassword.url),
+          ekSaltData.ek_salt,
+          ekSaltData.password
+        )
       };
 
       const method = updatedPassword.id === 0 ? "post" : "patch";
@@ -165,6 +173,7 @@ const PasswordDashboard: React.FC = () => {
       password: "",
       url: "",
       notes: "",
+      favicon_url: "",
       in_trash: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -259,10 +268,11 @@ const PasswordDashboard: React.FC = () => {
               onClick={() => handleEdit(password)}
             >
               <TableCell>
-                <Lock className="h-4 w-4" />
+                <img src={`${password.favicon_url}`} alt={`Web icon for ${password.name}'s site`}
+                className="w-full h-full object-cover"/>
               </TableCell>
               <TableCell>
-                <div>{password.name}</div>
+                <div className="text-lg">{password.name}</div>
                 <div className="text-sm text-gray-500">{password.url}</div>
               </TableCell>
               <TableCell>{password.username}</TableCell>

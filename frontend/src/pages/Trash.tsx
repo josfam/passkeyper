@@ -86,7 +86,8 @@ const PasswordTrashPage: React.FC = () => {
             password: decryptData(password.password, ekSalt, masterPassword),
             notes: password.notes ? decryptData(password.notes, ekSalt, masterPassword) : "",
             url: decryptData(password.url, ekSalt, masterPassword),
-            name: decryptData(password.name, ekSalt, masterPassword)
+            name: decryptData(password.name, ekSalt, masterPassword),
+            favicon_url: decryptData(password.favicon_url, ekSalt, masterPassword),
           };
           return decrypted;
         } catch (error) {
@@ -268,7 +269,8 @@ const PasswordTrashPage: React.FC = () => {
               onClick={() => handlePreview(password)}
             >
               <TableCell>
-                <Lock className="h-4 w-4" />
+              <img src={`${password.favicon_url}`} alt={`Web icon for ${password.name}'s site`}
+                className="w-full h-full object-cover"/>
               </TableCell>
               <TableCell>
                 <div>{password.name}</div>

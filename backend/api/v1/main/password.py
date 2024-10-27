@@ -29,6 +29,7 @@ def create_a_password_entry():
     username = data.get('username')
     password = data.get('password')
     url = data.get('url')
+    favicon_url = data.get('faviconUrl')
     notes = data.get('notes')
 
     # validating required fields ((non-nullable ones))
@@ -42,7 +43,8 @@ def create_a_password_entry():
         username=username,
         password=password,
         url=url,
-        notes=notes
+        notes=notes,
+        favicon_url=favicon_url
     )
 
     try:
@@ -131,7 +133,8 @@ def get_passwords():
                 'created_at': password.created_at,
                 'updated_at': password.updated_at,
                 'in_trash': password.in_trash,
-                'moved_at': password.moved_at    
+                'moved_at': password.moved_at ,
+                'favicon_url': password.favicon_url,
             }
             for password in paginated_passes.items
         ]
