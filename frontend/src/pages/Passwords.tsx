@@ -136,10 +136,14 @@ const PasswordDashboard: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['passwords'] });
       setIsEditModalOpen(false);
-      toast.success(`Password ${editingPassword?.id === 0 ? 'added' : 'updated'} successfully`);
+      toast.success(`Password ${editingPassword?.id === 0 ? 'added' : 'updated'} successfully`, {
+        autoClose: 2000 // 2 seconds
+      });
     },
     onError: () => {
-      toast.error("Failed to save the password. Please try again.");
+      toast.error("Failed to save the password. Please try again.", {
+        autoClose: 2000
+      });
     }
   });
 
@@ -152,10 +156,14 @@ const PasswordDashboard: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['passwords'] });
-      toast.success("The password has been moved to trash.");
+      toast.success("The password has been moved to trash.", {
+        autoClose: 2000
+      });
     },
     onError: () => {
-      toast.error("Failed to move the password to trash.");
+      toast.error("Failed to move the password to trash.", {
+        autoClose: 2000
+      });
     }
   });
 
@@ -191,7 +199,9 @@ const PasswordDashboard: React.FC = () => {
 
   const handleMoveToTrash = (password: PasswordEntry, closeModal: boolean = false) => {
     if (!password || typeof password.id === "undefined") {
-      toast.error("Invalid password object");
+      toast.error("Invalid password object", {
+        autoClose: 2000
+      });
       return;
     }
 
@@ -218,7 +228,9 @@ const PasswordDashboard: React.FC = () => {
     }
     setEditingPassword((prev) => (prev ? { ...prev, password } : null));
     setShowPassword(true);
-    toast.success("A new strong password has been generated.");
+    toast.success("A new strong password has been generated.", {
+      autoClose: 2000
+    });
   };
 
   if (isLoading) {
