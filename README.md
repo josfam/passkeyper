@@ -48,7 +48,20 @@ The project was developed by:
 coming soon...
 
 ## Demo
-coming soon...
+Watch our product demo to see Passkeyper in action:
+
+<div align="center">
+  <a href="https://drive.google.com/file/d/1FSTyShrJJBN8cBAaTweOcsVNU2IW_J3W/view?usp=drive_link">
+    <img src="https://img.shields.io/badge/Watch_Demo-4285F4?style=for-the-badge&logo=google-drive&logoColor=white" alt="Watch Demo" />
+  </a>
+</div>
+
+### Key Features Showcased
+- Secure password storage and management
+- Intuitive user interface
+- Easy password organization
+- Quick access to saved credentials
+- Zero-knowledge encryption
 
 ## Project Setup
 Clone the repo
