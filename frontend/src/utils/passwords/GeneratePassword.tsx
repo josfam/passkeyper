@@ -76,7 +76,7 @@ const generatePassword = ({
 		generatedPassword += pickOneChar(LOWERCASE_LIST);
 		possibleChars += LOWERCASE_LIST
 	}
-	console.log(`generated password before loop:\n ${generatedPassword}`); // DEBUG
+
 	// account for characters that may already be part of the generated password
 	const availableSlots = passwordLength - generatedPassword.length;
 	for (let i = 0; i < availableSlots; i++) {
