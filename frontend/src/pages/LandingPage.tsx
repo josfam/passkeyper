@@ -6,33 +6,34 @@ import demo from "../assets/demo.jpg";
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen ">
+    <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link className="flex items-center justify-center" to="/login">
-          <div className="h-9 w-9">
-            <img src={logo} alt="Passkeyper logo" />
-          </div>
-
-          <span className="ml-2 text-xl font-semibold">Passkeyper</span>
-        </Link>
-        <nav className="pt-2 ml-auto flex gap-1">
-          <Link to="/signup">
-            <Button className="text-md font-semibold" variant="outline">
-              signup
-            </Button>
+        <div className="container mx-auto flex items-center justify-between">
+          <Link className="flex items-center justify-center" to="/login">
+            <div className="h-9 w-9">
+              <img src={logo} alt="Passkeyper logo" />
+            </div>
+            <span className="ml-2 text-xl font-semibold">Passkeyper</span>
           </Link>
-          <Link to="/login">
-            <Button className="text-md font-semibold bg-blue-600 hover:bg-blue-500">
-              Login
-            </Button>
-          </Link>
-        </nav>
+          <nav className="flex gap-1">
+            <Link to="/signup">
+              <Button className="text-md font-semibold" variant="outline">
+                signup
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button className="text-md font-semibold bg-blue-600 hover:bg-blue-500">
+                Login
+              </Button>
+            </Link>
+          </nav>
+        </div>
       </header>
-      <main className="flex-1">
+      <main className="flex-1 w-full">
         <section className="w-full py-12 md:py-24 lg:py-24 xl:py-48">
-          <div className="container px-4 md:px-6">
+          <div className="container mx-auto px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-4xl mx-auto">
                 <h1 className="text-2xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
                   One password to rule them all
                 </h1>
@@ -43,26 +44,28 @@ export default function LandingPage() {
               </div>
               <div className="space-x-4">
                 <Link to="/signup">
-                  <Button className="text-md font-semibold  bg-blue-600 hover:bg-blue-500">
+                  <Button className="text-md font-semibold bg-blue-600 hover:bg-blue-500">
                     Get Started
                   </Button>
                 </Link>
               </div>
             </div>
           </div>
-          <img
-            className="mt-12 min-w-[350px] m-auto w-2/3 rounded-md"
-            src={demo}
-            alt="demo"
-          />
+          <div className="container mx-auto px-4 md:px-6 mt-12">
+            <img
+              className="mx-auto max-w-4xl w-full rounded-md"
+              src={demo}
+              alt="demo"
+            />
+          </div>
         </section>
 
         <section className="w-full py-6 md:py-6 lg:py-14 bg-muted">
-          <div className="container px-4 md:px-6">
+          <div className="container mx-auto px-4 md:px-6">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-12">
               Secure by Design
             </h2>
-            <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 max-w-6xl mx-auto">
               <div className="flex flex-col items-center space-y-3 text-center">
                 <Lock className="h-12 w-12 text-primary" />
                 <h3 className="text-xl font-bold">Secure Encryption</h3>
@@ -93,22 +96,23 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
         <section className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="flex flex-col items-center space-y-4 text-center max-w-4xl mx-auto">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                   Ready to Secure Your Passwords?
                 </h2>
               </div>
               <img
-                className="mt-12 m-auto w-[600px] rounded-md"
+                className="mt-12 w-full rounded-md"
                 src={demo}
                 alt="demo"
               />
               <div className="w-full max-w-sm space-y-2">
                 <Link to="/signup">
-                  <Button className="text-md font-semibold  bg-blue-600 hover:bg-blue-500">
+                  <Button className="text-md font-semibold bg-blue-600 hover:bg-blue-500">
                     Get Started
                   </Button>
                 </Link>
@@ -117,13 +121,17 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">© 2024 Passkeyper</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-xs hover:underline underline-offset-4" to="#">
-            Made with ❤️
-          </Link>
-        </nav>
+      <footer className="w-full border-t">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center">
+            <p className="text-xs text-muted-foreground">© 2024 Passkeyper</p>
+            <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+              <Link className="text-xs hover:underline underline-offset-4" to="#">
+                Made with ❤️
+              </Link>
+            </nav>
+          </div>
+        </div>
       </footer>
     </div>
   );
