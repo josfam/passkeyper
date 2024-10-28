@@ -12,30 +12,18 @@ import_export_bp = Blueprint('import_export', __name__)
 
 @import_export_bp.route('/import', methods=['POST'])
 def import_data():
-    """Imports user data as CSV/JSON"""
+    """Imports user data from encrypted JSON"""
     try:
         user_id = session.get('user_id')
         if not user_id:
             return jsonify({"error": "Unauthorized"}), 401
 
-        file = request.files.get('file')
-        if not file:
-            return jsonify({"error": "No file provided"}), 400
+        # Step 1: Retrieve JSON data directly from request
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
 
-        file_type = request.form.get('fileType', 'json')
-        file_content = file.read().decode('utf-8')
-
-        if file_type == 'json':
-            data = json.loads(file_content)
-        elif file_type == 'csv':
-            data = []
-            csv_reader = csv.DictReader(StringIO(file_content))
-            for row in csv_reader:
-                data.append(row)
-        else:
-            return jsonify({"error": "Invalid file type"}), 400
-
-        # Insert the data into the database
+        # Step 2: Insert data into the database
         for entry in data:
             new_entry = PasswordEntry(
                 user_id=user_id,
@@ -53,6 +41,7 @@ def import_data():
         db.session.commit()
 
         return jsonify({"message": "Data imported successfully!"}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
