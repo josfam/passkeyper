@@ -2,7 +2,7 @@ import { Button } from "../components/ui/button";
 import { Lock, Shield, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "../assets/passkeyper.svg";
-import demo from "../assets/demo.jpg";
+import demo from "../assets/demo.png";
 
 export default function LandingPage() {
   // Convert Google Drive link to embed format
@@ -62,7 +62,7 @@ export default function LandingPage() {
                 className="absolute top-0 left-0 w-full h-full rounded-md"
                 allow="autoplay"
                 allowFullScreen
-                title="Product Demo Video"
+                title="Passkeyper Demo Video"
               />
             </div>
           </div>
