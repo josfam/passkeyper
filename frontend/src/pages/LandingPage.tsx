@@ -22,7 +22,7 @@ export default function LandingPage() {
           <nav className="flex gap-1">
             <Link to="/signup">
               <Button className="text-md font-semibold" variant="outline">
-                signup
+                Signup
               </Button>
             </Link>
             <Link to="/login">
