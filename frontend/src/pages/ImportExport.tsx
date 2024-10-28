@@ -125,27 +125,57 @@ const ImportExportPage: React.FC = () => {
             withCredentials: true,
         });
 
-        // Parse and decrypt the response data
-        const responseData = await response.data.text();
-        const data = JSON.parse(responseData).map(item => ({
-            ...item,
-            name: decryptData(item.name, ekSaltData.ek_salt, ekSaltData.password),
-            username: decryptData(item.username, ekSaltData.ek_salt, ekSaltData.password),
-            password: decryptData(item.password, ekSaltData.ek_salt, ekSaltData.password),
-            url: decryptData(item.url, ekSaltData.ek_salt, ekSaltData.password),
-            favicon_url: decryptData(item.favicon_url, ekSaltData.ek_salt, ekSaltData.password),
-            notes: decryptData(item.notes, ekSaltData.ek_salt, ekSaltData.password),
-        }));
+        let data;
+        if (exportFileType === 'json') {
+            // Parse and decrypt the JSON response data
+            const responseData = await response.data.text();
+            data = JSON.parse(responseData).map(item => ({
+                ...item,
+                name: decryptData(item.name, ekSaltData.ek_salt, ekSaltData.password),
+                username: decryptData(item.username, ekSaltData.ek_salt, ekSaltData.password),
+                password: decryptData(item.password, ekSaltData.ek_salt, ekSaltData.password),
+                url: decryptData(item.url, ekSaltData.ek_salt, ekSaltData.password),
+                favicon_url: decryptData(item.favicon_url, ekSaltData.ek_salt, ekSaltData.password),
+                notes: decryptData(item.notes, ekSaltData.ek_salt, ekSaltData.password),
+            }));
 
-        // Convert the decrypted data back to Blob for download
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `exported_data.${exportFileType}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+            // Convert the decrypted JSON data to a Blob
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `exported_data.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else if (exportFileType === 'csv') {
+            // Read and decrypt the CSV response data
+            const responseData = await response.data.text();
+            const rows = responseData.split('\n').map(row => row.split(','));
+
+            // Assume the first row is the header
+            const headers = rows[0];
+            const decryptedRows = rows.slice(1).map(row => {
+                return row.map((cell, index) => {
+                    // Decrypt specific columns: assuming 0=name, 1=username, 2=password, 3=url, 4=favicon_url, 5=notes
+                    if (index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5) {
+                        return decryptData(cell, ekSaltData.ek_salt, ekSaltData.password);
+                    }
+                    return cell; // Keep other columns unchanged
+                });
+            });
+
+            // Convert decrypted rows back to CSV format
+            const decryptedCSV = [headers].concat(decryptedRows).map(row => row.join(',')).join('\n');
+            const blob = new Blob([decryptedCSV], { type: "text/csv" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `exported_data.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
 
         setMessage("Data exported successfully!");
     } catch (error) {
