@@ -5,6 +5,10 @@ import logo from "../assets/passkeyper.svg";
 import demo from "../assets/demo.jpg";
 
 export default function LandingPage() {
+  // Convert Google Drive link to embed format
+  const videoId = "1FSTyShrJJBN8cBAaTweOcsVNU2IW_J3W";
+  const embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
@@ -52,11 +56,15 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="container mx-auto px-4 md:px-6 mt-12">
-            <img
-              className="mx-auto max-w-4xl w-full rounded-md"
-              src={demo}
-              alt="demo"
-            />
+            <div className="relative w-full max-w-4xl mx-auto aspect-video rounded-md overflow-hidden">
+              <iframe
+                src={embedUrl}
+                className="absolute top-0 left-0 w-full h-full rounded-md"
+                allow="autoplay"
+                allowFullScreen
+                title="Product Demo Video"
+              />
+            </div>
           </div>
         </section>
 
