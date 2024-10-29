@@ -11,15 +11,21 @@
 	w-5
 }
 
+
 /* call to action primary button */
 .btn-primary {
-	@apply h-12 rounded-md flex w-full bg-sky-700 items-center justify-center text-white text-lg
-	hover:bg-sky-800 hover:text-white
+	@apply h-11 rounded-md flex w-full bg-sky-950 items-center justify-center text-white text-lg
+	hover:bg-sky-900 hover:text-white
 	active:bg-sky-950 active:text-white
 }
-
+/* secondary call to action buttons */
 .btn-secondary {
 	@apply bg-transparent border border-blue-400 text-sky-950 text-lg
+}
+
+/* non-clickable button */
+.btn-disabled {
+	@apply cursor-not-allowed opacity-40 hover:bg-sky-700
 }
 
 li {
