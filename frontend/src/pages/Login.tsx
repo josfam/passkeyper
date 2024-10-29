@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
+import AuthWithGoogleBtn from "../components/buttons/AuthWithGoogleBtn";
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
@@ -86,11 +86,14 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button className="w-full mt-4" type="submit" disabled={isLoading}>
+            <button type="submit" className="btn-primary w-full mt-4"
+              disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {isLoading ? "Logging in..." : "Login"}
-            </Button>
+            </button>
           </form>
+          <hr className="my-5"/>
+          <AuthWithGoogleBtn action={'Login'}/>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-600">

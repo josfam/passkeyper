@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import axios from "axios";
 import { Input } from "../components/ui/input";
-import { FaGoogle } from "react-icons/fa";
 
 import {
   Card,
@@ -17,6 +16,7 @@ import { MIN_MASTERPASSWORD_SCORE } from "../utils/passwords/Constants";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import checkWeakPassword from "../utils/passwords/stengthCheck";
+import AuthWithGoogleBtn from "../components/buttons/AuthWithGoogleBtn";
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
@@ -120,13 +120,6 @@ const Signup: React.FC = () => {
     checkStrength(password);
   }, [checkStrength, password]);
 
-  /**
-   * Handles the Google Signup when the google sign up is clicked
-   */
-  const handleGoogleSignUp = () => {
-    window.location.href = "http://localhost:5000/google";
-  }
-
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-[350px]">
@@ -222,12 +215,7 @@ const Signup: React.FC = () => {
             </button>
             </form>
             <hr className="my-5"/>
-            <button className="btn-primary btn-secondary w-full flex gap-3"
-              onClick={handleGoogleSignUp}
-            >
-              <FaGoogle/>
-              Sign up with Google
-            </button>
+            <AuthWithGoogleBtn action={'Sign Up'}/>
          
         </CardContent>
         <CardFooter>
