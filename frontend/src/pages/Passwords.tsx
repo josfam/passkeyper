@@ -104,6 +104,15 @@ const PasswordDashboard: React.FC = () => {
     cacheTime: 180000,
   });
 
+  const formatUrl = (url: string): string => {
+    if (!url) return url;
+    
+    if (!/^https?:\/\//i.test(url)) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   // Save Password Mutation
   const saveMutation = useMutation({
     mutationFn: async (updatedPassword: PasswordEntry) => {
@@ -112,7 +121,7 @@ const PasswordDashboard: React.FC = () => {
         username: encryptData(updatedPassword.username, ekSaltData.ek_salt, ekSaltData.password),
         password: encryptData(updatedPassword.password, ekSaltData.ek_salt, ekSaltData.password),
         notes: updatedPassword.notes ? encryptData(updatedPassword.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
-        url: encryptData(updatedPassword.url, ekSaltData.ek_salt, ekSaltData.password),
+        url: encryptData(formatUrl(updatedPassword.url), ekSaltData.ek_salt, ekSaltData.password),
         name: encryptData(updatedPassword.name, ekSaltData.ek_salt, ekSaltData.password),
         faviconUrl: encryptData(
           await getFaviconUrl(updatedPassword.url),
@@ -216,6 +225,22 @@ const PasswordDashboard: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setEditingPassword((prev) => (prev ? { ...prev, [name]: value } : null));
+  };
+
+  const handleUrlKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
+  const handleOpenUrl = (e: React.MouseEvent, url: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const formattedUrl = formatUrl(url);
+    if (formattedUrl) {
+      window.open(formattedUrl, "_blank");
+    }
   };
 
   const generatePassword = () => {
@@ -415,12 +440,14 @@ const PasswordDashboard: React.FC = () => {
                       name="url"
                       value={editingPassword.url}
                       onChange={handleInputChange}
+                      onKeyPress={handleUrlKeyPress}
                     />
                     <Button
+                      type="button"
                       variant="ghost"
                       size="icon"
                       className="ml-2"
-                      onClick={() => window.open(editingPassword.url, "_blank")}
+                      onClick={(e) => handleOpenUrl(e, editingPassword.url)}
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
