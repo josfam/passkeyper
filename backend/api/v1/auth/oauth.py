@@ -12,7 +12,7 @@ AUTH = Auth()
 oauth_bp = Blueprint('oauth', __name__)
 
 
-@oauth_bp.route('/google', methods=['POST'])
+@oauth_bp.route('/google', methods=['GET'])
 def google_login():
     """Login with google account"""
     # Generate a nonce (a random string)

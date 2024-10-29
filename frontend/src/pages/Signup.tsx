@@ -123,16 +123,8 @@ const Signup: React.FC = () => {
   /**
    * Handles the Google Signup when the google sign up is clicked
    */
-  const handleGoogleSignUp = async(e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Attempting Google Signup') // DEBUG
-    const response = await axios(
-      {
-        url: `${API_URL}google`,
-        method: 'post',
-      }
-    )
-    console.log(response);
+  const handleGoogleSignUp = () => {
+    window.location.href = "http://localhost:5000/google";
   }
 
   return (
@@ -228,14 +220,15 @@ const Signup: React.FC = () => {
                 "Sign Up"
               )}
             </button>
+            </form>
             <hr className="my-5"/>
-            <button type="submit" className="btn-primary btn-secondary w-full flex gap-3"
+            <button className="btn-primary btn-secondary w-full flex gap-3"
               onClick={handleGoogleSignUp}
             >
               <FaGoogle/>
               Sign up with Google
             </button>
-          </form>
+         
         </CardContent>
         <CardFooter>
           <p className="text-sm text-center w-full">
