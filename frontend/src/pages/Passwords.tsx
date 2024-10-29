@@ -33,6 +33,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { FaPlus } from "react-icons/fa";
 import getFaviconUrl from "../utils/scraping/FaviconExtraction";
 import { Textarea } from "../components/ui/textarea";
 import axios from "axios";
@@ -40,6 +41,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { filterPasswords, copyToClipboard, renderCopyButton } from '../utils/helpers';
 import { encryptData, decryptData } from '../utils/encrypt_decrypt';
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 interface PasswordEntry {
   id: number;
@@ -274,18 +276,31 @@ const PasswordDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Passwords</h1>
-        <Button onClick={handleAddPassword}>Add Password</Button>
+      <div className="flex justify-center items-center mb-6">
+        <h1 className="text-2xl font-bold text-slate-500">Passwords</h1>
+        <div className="group flex flex-row-reverse gap-2 justify-center items-center w-fit h-11
+          absolute right-6 bottom-20">
+          <button className="btn-primary w-14 h-14 flex justify-center items-center gap-3 rounded-full relative
+            z-10 shadow-lg shadow-indigo-300 hover:scale-105 transition-all ease-in-out"
+          onClick={handleAddPassword}
+          >
+            <FaPlus className="transition-all ease-in-out"/>
+          </button>
+          {/* tooltip on hover */}
+          <span className="bg-sky-100 px-3 py-2 rounded-lg text-sky-950 relative hidden
+          group-hover:opacity-100 group-hover:block transition-all ease-in-out z-10">Add a password
+           {/* Tooltip triangle */}
+          </span>
+        </div>
       </div>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-center items-center mb-8">
         <Input
-          className="max-w-sm"
-          placeholder="Search passwords..."
+          className="w-full text-xl border border-slate-300 sm:w-3/4 md:w-1/2 transition-all ease-in-out h-11"
+          placeholder="Search passwords"
           value={searchTerm}
+          autoFocus
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button variant="outline">Export</Button>
       </div>
       <Table>
         <TableHeader>
