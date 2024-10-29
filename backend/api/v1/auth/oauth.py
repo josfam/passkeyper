@@ -57,17 +57,13 @@ def callback():
             session['user_id'] = existing_user.id
             return jsonify({"message": "Login successful", "user_id": existing_user.id}), 200
 
-        # If user doesn't exist, create a new user
-        password = "default_password" # secrets.token_urlsafe(16) 
-        ek_salt = "default" # secrets.token_urlsafe(16) 
-
-        new_user = AUTH.register_user(email=email, password=password, username=username, ek_salt=ek_salt)
-        if new_user:
-            # Log the newly created user in
-            session['user_id'] = new_user.id
-            return jsonify({"message": "User created and logged in", "user_id": new_user.id}), 201
-        else:
-            return jsonify({"error": "User registration failed"}), 500
+        # If user doesn't exist, create a new user without setting default values
+        # Send response to frontend to prompt account completion
+        return jsonify({
+            "message": "Account completion required",
+            "status": "new_user",
+            "user_info": {"email": email, "username": username}
+        }), 200
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
