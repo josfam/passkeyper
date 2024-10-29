@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import axios from "axios";
-import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { FaGoogle } from "react-icons/fa";
 
@@ -18,7 +17,6 @@ import { MIN_MASTERPASSWORD_SCORE } from "../utils/passwords/Constants";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import checkWeakPassword from "../utils/passwords/stengthCheck";
-import { url } from "inspector";
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
