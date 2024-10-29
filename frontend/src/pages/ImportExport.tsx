@@ -2,7 +2,8 @@ import React, { useState, ChangeEvent } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent } from "../components/ui/card";
-import { Alert, AlertDescription } from "../components/ui/alert";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import { Upload, Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { encryptData, decryptData } from '../utils/encrypt_decrypt';
 import axios from "axios";
+import { FaCloudUploadAlt } from 'react-icons/fa';
 
 const API_URL = import.meta.env.VITE_FLASK_APP_API_URL;
 
@@ -23,10 +25,15 @@ interface DataObject {
   [key: string]: string | number | boolean | null;
 }
 
+const toastContainerStyle = {
+  position: 'fixed' as const,
+  top: '1rem',
+  right: '1rem',
+  zIndex: 9999,
+};
+
 const ImportExportPage: React.FC = () => {
   const [importedData, setImportedData] = useState<DataObject[] | null>(null);
-  const [exportData, setExportData] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
   const [importFileType, setImportFileType] = useState<FileType>("json");
   const [exportFileType, setExportFileType] = useState<FileType>("json");
 
@@ -50,35 +57,46 @@ const ImportExportPage: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
   
-    // File size limiting logic
+    // File size check with toast notification
     if (file.size > MAX_FILE_SIZE) {
-      setMessage("File is too large. Maximum allowed size is 5 MB.");
+      toast.error("File is too large. Maximum allowed size is 5 MB.", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
       return;
     }
 
-    // Step 1: Read and parse file data
-    const fileContent = await file.text();
-    let parsedData;
-    
-    if (importFileType === 'csv') {
-      parsedData = parseCSV(fileContent); // Assume parseCSV is a function that converts CSV to an array of objects
-    } else if (importFileType === 'json') {
-      parsedData = JSON.parse(fileContent);
-    }
+    const loadingToast = toast.loading("Importing data...", {
+      position: "top-right"
+    });
 
-    // Step 2: Encrypt parsed data
-    const encryptedData = parsedData.map((entry: any) => ({
-      ...entry,
-      username: encryptData(entry.username, ekSaltData.ek_salt, ekSaltData.password),
-      password: encryptData(entry.password, ekSaltData.ek_salt, ekSaltData.password),
-      notes: entry.notes ? encryptData(entry.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
-      url: encryptData(entry.url, ekSaltData.ek_salt, ekSaltData.password),
-      name: encryptData(entry.name, ekSaltData.ek_salt, ekSaltData.password),
-      favicon_url: entry.favicon_url ? encryptData(entry.favicon_url, ekSaltData.ek_salt, ekSaltData.password) : ""
-    }));
-
-    // Step 3: Send encrypted data to the server
     try {
+      // Step 1: Read and parse file data
+      const fileContent = await file.text();
+      let parsedData;
+      
+      if (importFileType === 'csv') {
+        parsedData = parseCSV(fileContent);
+      } else if (importFileType === 'json') {
+        parsedData = JSON.parse(fileContent);
+      }
+
+      // Step 2: Encrypt parsed data
+      const encryptedData = parsedData.map((entry: any) => ({
+        ...entry,
+        username: encryptData(entry.username, ekSaltData.ek_salt, ekSaltData.password),
+        password: encryptData(entry.password, ekSaltData.ek_salt, ekSaltData.password),
+        notes: entry.notes ? encryptData(entry.notes, ekSaltData.ek_salt, ekSaltData.password) : "",
+        url: encryptData(entry.url, ekSaltData.ek_salt, ekSaltData.password),
+        name: encryptData(entry.name, ekSaltData.ek_salt, ekSaltData.password),
+        favicon_url: entry.favicon_url ? encryptData(entry.favicon_url, ekSaltData.ek_salt, ekSaltData.password) : ""
+      }));
+
+      // Step 3: Send encrypted data to the server
       const response = await axios.post(`${API_URL}/import`, encryptedData, {
         headers: {
           'Content-Type': 'application/json',
@@ -86,13 +104,25 @@ const ImportExportPage: React.FC = () => {
         withCredentials: true,
       });
 
-      setMessage(response.data.message || "Data imported successfully!");
+      toast.update(loadingToast, {
+        render: "Data imported successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+        closeOnClick: true
+      });
+
     } catch (error) {
-      setMessage("Error importing data. Please try again.");
+      toast.update(loadingToast, {
+        render: "Error importing data. Please try again.",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true
+      });
       console.error("Error importing data:", error);
     }
   };
-  
 
   const parseCSV = (csvString: string): DataObject[] => {
     const lines = csvString.trim().split("\n");
@@ -106,28 +136,20 @@ const ImportExportPage: React.FC = () => {
     });
   };
 
-  const convertToCSV = (data: DataObject[]): string => {
-    const headers = Object.keys(data[0]);
-    const csvRows = [
-      headers.join(","),
-      ...data.map((row) =>
-        headers.map((header) => JSON.stringify(row[header] ?? "")).join(",")
-      ),
-    ];
-    return csvRows.join("\n");
-  };
-
   const handleExport = async () => {
+    const loadingToast = toast.loading("Exporting data...", {
+      position: "top-right"
+    });
+
     try {
         const response = await axios.get(`${API_URL}/export`, {
             params: { fileType: exportFileType },
-            responseType: "blob", // Ensures we get the data as a binary blob
+            responseType: "blob",
             withCredentials: true,
         });
 
         let data;
         if (exportFileType === 'json') {
-            // Parse and decrypt the JSON response data
             const responseData = await response.data.text();
             data = JSON.parse(responseData).map(item => ({
                 ...item,
@@ -139,7 +161,6 @@ const ImportExportPage: React.FC = () => {
                 notes: decryptData(item.notes, ekSaltData.ek_salt, ekSaltData.password),
             }));
 
-            // Convert the decrypted JSON data to a Blob
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -149,23 +170,18 @@ const ImportExportPage: React.FC = () => {
             a.click();
             document.body.removeChild(a);
         } else if (exportFileType === 'csv') {
-            // Read and decrypt the CSV response data
             const responseData = await response.data.text();
             const rows = responseData.split('\n').map(row => row.split(','));
-
-            // Assume the first row is the header
             const headers = rows[0];
             const decryptedRows = rows.slice(1).map(row => {
                 return row.map((cell, index) => {
-                    // Decrypt specific columns: assuming 0=name, 1=username, 2=password, 3=url, 4=favicon_url, 5=notes
                     if (index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5) {
                         return decryptData(cell, ekSaltData.ek_salt, ekSaltData.password);
                     }
-                    return cell; // Keep other columns unchanged
+                    return cell;
                 });
             });
 
-            // Convert decrypted rows back to CSV format
             const decryptedCSV = [headers].concat(decryptedRows).map(row => row.join(',')).join('\n');
             const blob = new Blob([decryptedCSV], { type: "text/csv" });
             const url = window.URL.createObjectURL(blob);
@@ -177,16 +193,43 @@ const ImportExportPage: React.FC = () => {
             document.body.removeChild(a);
         }
 
-        setMessage("Data exported successfully!");
+        toast.update(loadingToast, {
+          render: "Data exported successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 2000,
+          closeOnClick: true
+        });
     } catch (error) {
-      setMessage("Error exporting data.");
-      console.error("Error exporting data:", error);
+        toast.update(loadingToast, {
+          render: "Error exporting data. Please try again.",
+          type: "error",
+          isLoading: false,
+          autoClose: 2000,
+          closeOnClick: true
+        });
+        console.error("Error exporting data:", error);
     }
   };
-  
 
   return (
+    <>
+          <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={toastContainerStyle}
+        className="fixed-toast"
+      />
     <div className="container mx-auto p-4 space-y-8">
+      
       <section>
         <h3 className="text-lg font-semibold mb-3">Import</h3>
         <Card className="shadow-sm max-w-2xl">
@@ -204,12 +247,18 @@ const ImportExportPage: React.FC = () => {
                   <SelectItem value="csv">CSV</SelectItem>
                 </SelectContent>
               </Select>
-              <Input
-                type="file"
-                onChange={handleImport}
-                accept={`.${importFileType}`}
-                className="w-2/4 text-sm"
-              />
+              <div className="w-28 h-28 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 cursor-pointer relative">
+                <Input
+                  type="file"
+                  onChange={handleImport}
+                  accept={`.${importFileType}`}
+                  className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                />
+                <div className="text-center text-gray-400">
+                  <FaCloudUploadAlt className="mx-auto h-8 w-8" />
+                  <p className="text-sm">Drag & drop</p>
+                </div>
+              </div>
               <Button
                 size="sm"
                 onClick={() =>
@@ -257,13 +306,8 @@ const ImportExportPage: React.FC = () => {
           </CardContent>
         </Card>
       </section>
-
-      {message && (
-        <Alert className="mt-4 text-sm max-w-2xl">
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      )}
     </div>
+    </>
   );
 };
 
