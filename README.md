@@ -2,7 +2,7 @@
 > A user-friendly, secure password manager, on the web
 
 ## Inspiration
-coming soon...
+Passkeyper represents the journey we've taken in our ALX software engineering program. It's not just about code; it’s the result of our growth, countless late nights troubleshooting, and the excitement of finally blending everything we’ve learned into one project. We wanted to build something meaningful, something people could find useful. Passkeyper is our way of saying, "This is how far we've come, and we're excited about where we're headed next."
 
 ## Table of Contents
 
@@ -61,7 +61,7 @@ Watch our product demo to see Passkeyper in action:
 - Intuitive user interface
 - Easy password organization
 - Quick access to saved credentials
-- Zero-knowledge encryption
+- Zero-knowledge architecture
 
 ## Project Setup
 Clone the repo
