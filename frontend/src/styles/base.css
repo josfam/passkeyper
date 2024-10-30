@@ -14,8 +14,8 @@
 
 /* call to action primary button */
 .btn-primary {
-	@apply h-11 rounded-md flex w-full bg-sky-950 items-center justify-center text-white text-lg
-	hover:bg-sky-900 hover:text-white
+	@apply h-11 min-w-11 rounded-md flex w-full bg-sky-900 items-center justify-center text-white text-lg
+	hover:bg-sky-800 hover:text-white
 	active:bg-sky-950 active:text-white
 }
 /* secondary call to action buttons */
@@ -30,4 +30,12 @@
 
 li {
 	@apply list-none m-0 p-0
+}
+
+.hrule {
+	@apply my-5
+}
+
+.hrule-heading {
+	@apply mb-5
 }

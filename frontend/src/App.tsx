@@ -16,6 +16,7 @@ import PasswordGenerator from "./pages/PasswordGenerator";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ExternalAuthPasswordPage from "./pages/ExternalAuthPasswordPage";
 import SecurityDashboard from './pages/Dashboard';
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -108,7 +109,7 @@ const App: React.FC = () => {
 
   const AppContent: React.FC = () => {
     const location = useLocation();
-    const hideOnPaths = ['/', '/login', '/signup'];
+    const hideOnPaths = ['/', '/login', '/signup', '/external-auth-password-creation'];
     const shouldHideSidebar = hideOnPaths.includes(location.pathname);
 
     return (
@@ -143,6 +144,7 @@ const App: React.FC = () => {
               element={<Login setIsAuthenticated={setIsAuthenticated} />}
             />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/external-auth-password-creation" element={<ExternalAuthPasswordPage/>}/>
             <Route
               path="/passwords"
               element={<ProtectedRoute element={<Passwords />} />}

@@ -1,12 +1,16 @@
 #!/usr/bin/python3
+
 from flask import Blueprint, jsonify, redirect, request, session, url_for
 from backend.models import oauth
 from backend.models.user import User
 from backend.utils.auth import Auth
+from urllib.parse import urlencode
+from dotenv import load_dotenv
 import secrets
 import traceback
+import os
 
-
+load_dotenv()
 AUTH = Auth()
 
 oauth_bp = Blueprint('oauth', __name__)
@@ -55,15 +59,15 @@ def callback():
         if existing_user:
             # User exists, log them in
             session['user_id'] = existing_user.id
+            # return redirect(f'{frontend_client}/passwords', code=200)
             return jsonify({"message": "Login successful", "user_id": existing_user.id}), 200
 
-        # If user doesn't exist, create a new user without setting default values
-        # Send response to frontend to prompt account completion
-        return jsonify({
-            "message": "Account completion required",
-            "status": "new_user",
+        # redirect to a frontend url, with the user info for this new user in the url params
+        url_params = urlencode({
             "user_info": {"email": email, "username": username}
-        }), 200
+        })
+        frontend_client = os.getenv('CLIENT_ADDRESS')
+        return redirect(f'{frontend_client}/external-auth-password-creation?{url_params}', code=302)
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 409
