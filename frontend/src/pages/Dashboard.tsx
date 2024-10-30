@@ -200,7 +200,7 @@ function SecurityDashboard() {
   }
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-9">Security Dashboard</h1>
+      <h1 className="page-header">Security Dashboard</h1>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Email Breach Detection Card */}

@@ -276,14 +276,14 @@ const PasswordDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-center items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-500">Passwords</h1>
+      <div className="flex justify-center items-center">
+        <h1 className="page-header">Passwords</h1>
         <div className="group flex flex-row-reverse gap-2 justify-center items-center w-fit h-11
           absolute right-6 bottom-20">
           <button className="btn-primary w-14 h-14 flex justify-center items-center gap-3 rounded-full relative
             z-10 shadow-lg shadow-indigo-300 hover:scale-105 transition-all ease-in-out"
-          onClick={handleAddPassword}
-          >
+            onClick={handleAddPassword}
+            >
             <FaPlus className="transition-all ease-in-out"/>
           </button>
           {/* tooltip on hover */}
@@ -295,8 +295,8 @@ const PasswordDashboard: React.FC = () => {
       </div>
       <div className="flex justify-center items-center mb-8">
         <Input
-          className="w-full text-xl border border-slate-300 sm:w-3/4 md:w-1/2 transition-all ease-in-out h-11"
-          placeholder="Search passwords"
+          className="w-full text-lg border border-slate-300 sm:w-3/4 md:w-1/2 transition-all ease-in-out h-11"
+          placeholder="Search passwords..."
           value={searchTerm}
           autoFocus
           onChange={(e) => setSearchTerm(e.target.value)}

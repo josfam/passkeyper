@@ -11,6 +11,9 @@
 	w-5
 }
 
+.page-header {
+	@apply text-2xl font-bold text-slate-500 text-center mb-6
+}
 
 /* call to action primary button */
 .btn-primary {
@@ -18,9 +21,10 @@
 	hover:bg-sky-800 hover:text-white
 	active:bg-sky-950 active:text-white
 }
+
 /* secondary call to action buttons */
 .btn-secondary {
-	@apply bg-transparent border border-blue-400 text-sky-950 text-lg
+	@apply bg-transparent border border-blue-900 text-sky-950 text-lg
 }
 
 /* non-clickable button */

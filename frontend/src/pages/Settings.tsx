@@ -118,7 +118,7 @@ const Settings = () => {
 
   return (
     <div className="flex p-6 flex-col h-screen max-w-lg">
-      <h1 className="text-3xl font-bold mb-6">My Account</h1>
+      <h1 className="page-header">My Account</h1>
 
       {/* NAME */}
       <div className="mb-2">
@@ -157,21 +157,6 @@ const Settings = () => {
           Edit
         </button>
     </div>
-
-      {/* Change Password Section
-      <div
-        className="text-blue-600 cursor-pointer mt-4 flex items-center"
-        onClick={() => setShowModal(true)}
-      >
-        <FaKey className="mr-2" />
-        <span>Change Password</span>
-      </div>
-
-      {/* Password Change Modal
-      <PasswordChangeModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />*/}
 
       {/* Delete Account Section */}
       <div className="flex items-center mt-6">
