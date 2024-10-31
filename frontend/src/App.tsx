@@ -136,7 +136,7 @@ const App: React.FC = () => {
         )}
         <div
           id="content-area"
-          className={`bg-white min-h-screen flex-1 flex-col pt-6 px-4 md:px-16 overflow-y-scroll
+          className={`bg-slate-50 min-h-screen flex-1 flex-col pt-6 px-4 md:px-16 overflow-y-scroll
             pb-28 md:pb-0`}
         >
           <Routes>

@@ -204,7 +204,7 @@ function SecurityDashboard() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Email Breach Detection Card */}
-        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
+        <Card className="shadow-lg shadow-indigo-200 border border-slate-200">
           <CardHeader>
             <CardTitle>Email Breach Detection</CardTitle>
             <CardDescription>
@@ -251,7 +251,7 @@ function SecurityDashboard() {
         </Card>
 
         {/* Password Breach Detection Card */}
-        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
+        <Card className="shadow-lg shadow-indigo-200 border border-slate-200">
           <CardHeader>
             <CardTitle>Password Breach Detection</CardTitle>
             <CardDescription>
@@ -318,7 +318,7 @@ function SecurityDashboard() {
         </Card>
 
         {/* Weak Password Detection Card */}
-        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
+        <Card className="shadow-lg shadow-indigo-200 border border-slate-200">
           <CardHeader>
             <CardTitle>Weak Password Detection</CardTitle>
             <CardDescription>
@@ -346,7 +346,7 @@ function SecurityDashboard() {
         </Card>
 
         {/* Duplicate Password Detection Card */}
-        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
+        <Card className="shadow-lg shadow-indigo-200 border border-slate-200">
           <CardHeader>
             <CardTitle>Duplicate Password Detection</CardTitle>
             <CardDescription>

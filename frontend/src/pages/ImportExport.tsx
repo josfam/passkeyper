@@ -233,7 +233,7 @@ const ImportExportPage: React.FC = () => {
         <div className="flex flex-col gap-14">
           <section className="flex flex-col items-start justify-center">
             <Card className=" text-sky-950 w-full sm:w-3/4 lg:w-1/2 transition-all ease-in-out duration-300
-            shadow-lg shadow-indigo-100 border border-slate-200">
+            shadow-lg shadow-indigo-200 border border-slate-200">
               <CardHeader className="text-center text-xl pb-0">Import</CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-4">
@@ -286,7 +286,7 @@ const ImportExportPage: React.FC = () => {
 
           <section className="flex flex-col items-start justify-center">
             <Card className="text-sky-950 w-full sm:w-3/4 lg:w-1/2
-              shadow-lg shadow-indigo-100 border border-slate-200">
+              shadow-lg shadow-indigo-200 border border-slate-200">
               <CardHeader className="text-center text-xl pb-0">Export</CardHeader>
               <CardContent className="pt-6">
                 <div className="flex gap-4">
