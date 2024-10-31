@@ -137,7 +137,7 @@ const App: React.FC = () => {
         )}
         <div
           id="content-area"
-          className={`bg-slate-50 min-h-screen flex-1 flex-col px-4 md:px-16 overflow-y-scroll
+          className={`bg-slate-50 min-h-screen flex-1 flex-col px-4 md:px-8 lg:px-16 overflow-y-scroll
           ${shouldHideYPadding? 'pt-0 mt-0': 'pb-28 pt-6'} md:pb-0`}
         >
           <Routes>

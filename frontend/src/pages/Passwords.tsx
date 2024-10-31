@@ -295,7 +295,7 @@ const PasswordDashboard: React.FC = () => {
       </div>
       <div className="flex justify-center items-center mb-8">
         <Input
-          className="w-full text-lg border border-slate-300 sm:w-3/4 md:w-1/2 transition-all ease-in-out h-11"
+          className="w-full text-lg border-2 border-indigo-200 sm:w-3/4 md:w-1/2 transition-all ease-in-out h-11"
           placeholder="Search passwords..."
           value={searchTerm}
           autoFocus
@@ -304,34 +304,38 @@ const PasswordDashboard: React.FC = () => {
       </div>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="hidden sm:table-row">
             <TableHead className="w-[50px]"></TableHead>
             <TableHead>Name/URL</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Created At</TableHead>
+            <TableHead className="hidden sm:table-cell">Username</TableHead>
+            <TableHead className="hidden lg:table-cell">Created At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="transition-all ease-in-out">
           {filteredPasswords.map((password) => (
             <TableRow
               key={password.id}
-              className="cursor-pointer hover:bg-gray-100"
+              className="cursor-pointer hover:bg-sky-100 hover:text-sky-800 max-h-16"
               onClick={() => handleEdit(password)}
             >
-              <TableCell>
-                <img src={`${password.favicon_url}`} alt={`Web icon for ${password.name}'s site`}
-                className="w-full h-full object-cover"/>
+              <TableCell className="w-12">
+                <div className="h-12 w-12 max-sm:max-h-9 sm:max-w-9">
+                  <img src={`${password.favicon_url}`} alt={`Web icon for ${password.name}'s site`}
+                  className="w-full h-full object-contain"/>
+                </div>
               </TableCell>
               <TableCell>
-                <div className="text-lg">{password.name}</div>
-                <div className="text-sm text-gray-500">{password.url}</div>
+                <div className="max-w-80 text-ellipsis overflow-clip text-lg font-medium">{password.name}</div>
+                <div className="w-40 text-sm text-nowrap text-gray-500 text-ellipsis overflow-x-clip">{password.url}</div>
               </TableCell>
-              <TableCell>{password.username}</TableCell>
-              <TableCell>
+              <TableCell className="text-base hidden sm:table-cell">
+                {password.username}
+              </TableCell>
+              <TableCell className="text-base hidden lg:table-cell">
                 {new Date(password.created_at).toLocaleDateString()}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-center sm:text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -340,7 +344,7 @@ const PasswordDashboard: React.FC = () => {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-9 w-9 sm:h-6 sm:w-6" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
