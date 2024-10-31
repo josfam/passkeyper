@@ -102,7 +102,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
           <AuthWithGoogleBtn action={'Login'}/>
         </CardContent>
         <CardFooter className="flex flex-col justify-center">
-          <p className="text-base text-gray-600">
+          <p className="text-lg text-gray-400">
             Don't have an account?{" "}
             <a href="/signup" className="text-blue-600 text-lg hover:underline">
               Sign up

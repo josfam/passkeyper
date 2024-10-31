@@ -224,8 +224,8 @@ const Signup: React.FC = () => {
             <AuthWithGoogleBtn action={'Sign Up'}/>
          
         </CardContent>
-        <CardFooter>
-          <p className="text-base text-center w-full">
+        <CardFooter className="flex flex-col justify-center">
+          <p className="text-lg text-gray-400">
             Already have an account?{" "}
             <a href="/login" className="text-blue-600 text-lg hover:underline">
               Login
