@@ -51,7 +51,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <Card className="w-[350px]">
+      <Card className="w-[350px] shadow-lg shadow-indigo-100 border border-slate-200">
         <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>Enter your email and password to login</CardDescription>

@@ -117,7 +117,7 @@ const Settings = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="flex p-6 flex-col h-screen max-w-lg">
+    <div className="flex flex-col h-screen max-w-lg">
       <h1 className="page-header">My Account</h1>
 
       {/* NAME */}

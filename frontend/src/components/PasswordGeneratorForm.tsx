@@ -65,11 +65,11 @@ const PasswordGeneratorForm = () => {
 	}
 
 	return (
-		<div className='mx-auto pt-6 px-4'>
+		<div className='mx-auto'>
 			<h1 className="page-header">Password generator</h1>
-			<div className='container flex pb-12 flex-col items-center justify-center w-full h-full mb-10 md:mb-0 md:p-2'>
-				<div id='form-container' className='p-8 w-full rounded-lg flex flex-col justify-center gap-1
-					border border-slate-400 min-w-96 md:w-3/4'>
+			<div className='container flex flex-col items-left justify-center w-full h-full'>
+				<div id='form-container' className='card-shadow p-8 w-full rounded-lg flex flex-col justify-center gap-1
+					min-w-96 md:w-3/4 lg:w-1/2'>
 					<Form {...form}>
 						{/* password display area */}
 						<div className={`bg-slate-100 border w-full flex items-center justify-center overflow-y-scroll rounded-lg p-4 text-2xl

@@ -122,7 +122,7 @@ const Signup: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-[350px]">
+      <Card className="w-[350px] shadow-lg shadow-indigo-100 border border-slate-200">
         <CardHeader>
           <CardTitle>Sign Up</CardTitle>
           <CardDescription>Create a new account</CardDescription>

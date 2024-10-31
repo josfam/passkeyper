@@ -12,7 +12,7 @@
 }
 
 .page-header {
-	@apply text-2xl font-bold text-slate-500 text-center mb-6
+	@apply text-2xl font-bold text-slate-500 text-center sm:text-left mb-6
 }
 
 /* call to action primary button */
@@ -42,4 +42,8 @@ li {
 
 .hrule-heading {
 	@apply mb-5
+}
+
+.card-shadow {
+	@apply shadow-lg shadow-indigo-100 border border-slate-200
 }

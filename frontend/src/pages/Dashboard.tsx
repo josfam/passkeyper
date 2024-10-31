@@ -199,12 +199,12 @@ function SecurityDashboard() {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto">
       <h1 className="page-header">Security Dashboard</h1>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Email Breach Detection Card */}
-        <Card>
+        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
           <CardHeader>
             <CardTitle>Email Breach Detection</CardTitle>
             <CardDescription>
@@ -251,7 +251,7 @@ function SecurityDashboard() {
         </Card>
 
         {/* Password Breach Detection Card */}
-        <Card>
+        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
           <CardHeader>
             <CardTitle>Password Breach Detection</CardTitle>
             <CardDescription>
@@ -318,7 +318,7 @@ function SecurityDashboard() {
         </Card>
 
         {/* Weak Password Detection Card */}
-        <Card>
+        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
           <CardHeader>
             <CardTitle>Weak Password Detection</CardTitle>
             <CardDescription>
@@ -346,7 +346,7 @@ function SecurityDashboard() {
         </Card>
 
         {/* Duplicate Password Detection Card */}
-        <Card>
+        <Card className="shadow-lg shadow-indigo-100 border border-slate-200">
           <CardHeader>
             <CardTitle>Duplicate Password Detection</CardTitle>
             <CardDescription>
