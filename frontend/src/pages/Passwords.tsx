@@ -275,7 +275,7 @@ const PasswordDashboard: React.FC = () => {
   const filteredPasswords = filterPasswords(passwords, searchTerm);
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto">
       <div className="flex justify-center items-center">
         <h1 className="page-header">Passwords</h1>
         <div className="group flex flex-row-reverse gap-2 justify-center items-center w-fit h-11
