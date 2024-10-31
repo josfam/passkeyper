@@ -6,7 +6,6 @@ interface weakPasswordProps {
 
 const checkWeakPassword = ({ masterPassword }: weakPasswordProps) => {
 	const strengthReport = zxcvbn(masterPassword);
-	console.log(strengthReport);
 	return strengthReport;
 }
 
