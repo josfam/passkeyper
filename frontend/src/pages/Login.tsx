@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input } from "../components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import AuthWithGoogleBtn from "../components/buttons/AuthWithGoogleBtn";
@@ -51,10 +51,9 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <Card className="w-[350px] shadow-lg shadow-indigo-100 border border-slate-200">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>Enter your email and password to login</CardDescription>
+      <Card className="w-96 shadow-lg shadow-indigo-200 border border-slate-200">
+        <CardHeader className="bg-slate-200 rounded-t-lg py-4 mb-10">
+          <CardTitle className="text-center text-lg text-slate-600">Login</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
@@ -63,7 +62,9 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Email"
+                  placeholder="Enter email"
+                  autoFocus
+                  className="h-11 text-lg border-2 border-indigo-200"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -73,7 +74,8 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Enter master password"
+                  className="h-11 text-lg border-2 border-indigo-200"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -86,19 +88,23 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <button type="submit" className="btn-primary w-full mt-4"
+            <button type="submit" className="btn-primary w-full mt-8"
               disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
-          <hr className="my-5"/>
+          <div className="flex items-center gap-2 my-3">
+            <div className="h-[1px] w-full bg-slate-300"></div>
+            or
+            <div className="h-[1px] w-full bg-slate-300"></div>
+          </div>
           <AuthWithGoogleBtn action={'Login'}/>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-600">
+        <CardFooter className="flex flex-col justify-center">
+          <p className="text-base text-gray-600">
             Don't have an account?{" "}
-            <a href="/signup" className="text-blue-600 hover:underline">
+            <a href="/signup" className="text-blue-600 text-lg hover:underline">
               Sign up
             </a>
           </p>

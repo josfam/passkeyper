@@ -111,6 +111,7 @@ const App: React.FC = () => {
     const location = useLocation();
     const hideOnPaths = ['/', '/login', '/signup', '/external-auth-password-creation'];
     const shouldHideSidebar = hideOnPaths.includes(location.pathname);
+    const shouldHideYPadding = hideOnPaths.includes(location.pathname)
 
     return (
 		<>
@@ -136,8 +137,8 @@ const App: React.FC = () => {
         )}
         <div
           id="content-area"
-          className={`bg-slate-50 min-h-screen flex-1 flex-col pt-6 px-4 md:px-16 overflow-y-scroll
-            pb-28 md:pb-0`}
+          className={`bg-slate-50 min-h-screen flex-1 flex-col px-4 md:px-16 overflow-y-scroll
+          ${shouldHideYPadding? 'pt-0 mt-0': 'pb-28 pt-6'} md:pb-0`}
         >
           <Routes>
             <Route

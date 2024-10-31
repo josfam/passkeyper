@@ -122,20 +122,21 @@ const Signup: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-[350px] shadow-lg shadow-indigo-100 border border-slate-200">
-        <CardHeader>
-          <CardTitle>Sign Up</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
+      <Card className="w-96 shadow-lg shadow-indigo-200 border border-slate-200">
+        <CardHeader className="bg-slate-200 rounded-t-lg py-4 mb-10">
+          <CardTitle className="text-center text-lg text-slate-600">Sign Up</CardTitle>
         </CardHeader>
-
         <CardContent>
           <form onSubmit={handleSignup}>
             <div className="space-y-4">
               <div className="flex flex-col gap-1">
                 <Input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Enter email"
                   value={email}
+                  autoFocus
+                  className={`h-11 text-lg border-2 border-indigo-200
+                    ${emailError ? 'border border-red-700' : ''}`}
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value === '') {
@@ -151,7 +152,6 @@ const Signup: React.FC = () => {
                   }
                   required
                   disabled={isLoading}
-                  className={`${emailError ? 'border border-red-700' : ''}`}
                 />
                 {/* error messages if any */}
                 {emailError && (
@@ -162,8 +162,9 @@ const Signup: React.FC = () => {
               </div>
               <Input
                 type="text"
-                placeholder="Username"
+                placeholder="Enter username"
                 value={username}
+                className="h-11 text-lg border-2 border-indigo-200"
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 disabled={isLoading}
@@ -171,7 +172,7 @@ const Signup: React.FC = () => {
               <div className="flex flex-col gap-1">
                 <Input
                   type="password"
-                  placeholder="Master Password"
+                  placeholder="Enter master password"
                   value={password}
                   required
                   disabled={isLoading}
@@ -185,7 +186,8 @@ const Signup: React.FC = () => {
                       checkStrength(password);
                     }
                   }}
-                  className={`${hasStrengthInfo ? 'border border-red-700' : ''}`}
+                  className={`h-11 text-lg border-2 border-indigo-200
+                    ${hasStrengthInfo ? 'border border-red-700' : ''}`}
                 />
                 {/* error messages if any */}
                 <p className="text-red-700 text-sm text-center">{
@@ -199,7 +201,7 @@ const Signup: React.FC = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <button type="submit" className={`btn-primary  w-full mt-4
+            <button type="submit" className={`btn-primary  w-full mt-8
               ${(isLoading || hasStrengthInfo || !username || !email || !password) ? 'btn-disabled' : ''}`}
               style={{
                 pointerEvents :  isLoading || hasStrengthInfo || !username || !email || !password ? 'none' : 'auto'
@@ -214,14 +216,18 @@ const Signup: React.FC = () => {
               )}
             </button>
             </form>
-            <hr className="my-5"/>
+            <div className="flex items-center gap-2 my-3">
+              <div className="h-[1px] w-full bg-slate-300"></div>
+              or
+              <div className="h-[1px] w-full bg-slate-300"></div>
+            </div>
             <AuthWithGoogleBtn action={'Sign Up'}/>
          
         </CardContent>
         <CardFooter>
-          <p className="text-sm text-center w-full">
+          <p className="text-base text-center w-full">
             Already have an account?{" "}
-            <a href="/login" className="text-blue-600 hover:underline">
+            <a href="/login" className="text-blue-600 text-lg hover:underline">
               Login
             </a>
           </p>

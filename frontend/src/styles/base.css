@@ -45,5 +45,5 @@ li {
 }
 
 .card-shadow {
-	@apply shadow-lg shadow-indigo-100 border border-slate-200
+	@apply shadow-lg shadow-indigo-200 border border-slate-200
 }
