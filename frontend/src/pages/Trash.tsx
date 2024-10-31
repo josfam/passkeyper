@@ -311,24 +311,23 @@ const PasswordTrashPage: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Password Trash</h1>
-        {trashedPasswords.length > 0 && (
-          <Button
-            onClick={() => setIsDeleteAllDialogOpen(true)}
-            className="flex items-center"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Empty Trash
-          </Button>
-        )}
-      </div>
-      <div className="flex justify-between items-center mb-4">
+    <div className="container mx-auto">
+      <h1 className="page-header text-center">Password Trash</h1>
+      {trashedPasswords.length > 0 && (
+        <Button
+          onClick={() => setIsDeleteAllDialogOpen(true)}
+          className="flex items-center"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Empty Trash
+        </Button>
+      )}
+      <div className="flex justify-center items-center mb-8">
         <Input
-          className="max-w-sm"
+          className="w-full text-lg border border-slate-300 sm:w-3/4 md:w-1/2 transition-all ease-in-out h-11"
           placeholder="Search trashed passwords..."
           value={searchTerm}
+          autoFocus
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
