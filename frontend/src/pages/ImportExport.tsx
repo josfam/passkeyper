@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Card, CardContent } from "../components/ui/card";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -56,7 +56,7 @@ const ImportExportPage: React.FC = () => {
   const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-  
+
     // File size check with toast notification
     if (file.size > MAX_FILE_SIZE) {
       toast.error("File is too large. Maximum allowed size is 5 MB.", {
@@ -78,7 +78,7 @@ const ImportExportPage: React.FC = () => {
       // Step 1: Read and parse file data
       const fileContent = await file.text();
       let parsedData;
-      
+
       if (importFileType === 'csv') {
         parsedData = parseCSV(fileContent);
       } else if (importFileType === 'json') {
@@ -142,79 +142,79 @@ const ImportExportPage: React.FC = () => {
     });
 
     try {
-        const response = await axios.get(`${API_URL}/export`, {
-            params: { fileType: exportFileType },
-            responseType: "blob",
-            withCredentials: true,
+      const response = await axios.get(`${API_URL}/export`, {
+        params: { fileType: exportFileType },
+        responseType: "blob",
+        withCredentials: true,
+      });
+
+      let data;
+      if (exportFileType === 'json') {
+        const responseData = await response.data.text();
+        data = JSON.parse(responseData).map(item => ({
+          ...item,
+          name: decryptData(item.name, ekSaltData.ek_salt, ekSaltData.password),
+          username: decryptData(item.username, ekSaltData.ek_salt, ekSaltData.password),
+          password: decryptData(item.password, ekSaltData.ek_salt, ekSaltData.password),
+          url: decryptData(item.url, ekSaltData.ek_salt, ekSaltData.password),
+          favicon_url: decryptData(item.favicon_url, ekSaltData.ek_salt, ekSaltData.password),
+          notes: decryptData(item.notes, ekSaltData.ek_salt, ekSaltData.password),
+        }));
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `exported_data.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else if (exportFileType === 'csv') {
+        const responseData = await response.data.text();
+        const rows = responseData.split('\n').map(row => row.split(','));
+        const headers = rows[0];
+        const decryptedRows = rows.slice(1).map(row => {
+          return row.map((cell, index) => {
+            if (index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5) {
+              return decryptData(cell, ekSaltData.ek_salt, ekSaltData.password);
+            }
+            return cell;
+          });
         });
 
-        let data;
-        if (exportFileType === 'json') {
-            const responseData = await response.data.text();
-            data = JSON.parse(responseData).map(item => ({
-                ...item,
-                name: decryptData(item.name, ekSaltData.ek_salt, ekSaltData.password),
-                username: decryptData(item.username, ekSaltData.ek_salt, ekSaltData.password),
-                password: decryptData(item.password, ekSaltData.ek_salt, ekSaltData.password),
-                url: decryptData(item.url, ekSaltData.ek_salt, ekSaltData.password),
-                favicon_url: decryptData(item.favicon_url, ekSaltData.ek_salt, ekSaltData.password),
-                notes: decryptData(item.notes, ekSaltData.ek_salt, ekSaltData.password),
-            }));
+        const decryptedCSV = [headers].concat(decryptedRows).map(row => row.join(',')).join('\n');
+        const blob = new Blob([decryptedCSV], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `exported_data.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
 
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `exported_data.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } else if (exportFileType === 'csv') {
-            const responseData = await response.data.text();
-            const rows = responseData.split('\n').map(row => row.split(','));
-            const headers = rows[0];
-            const decryptedRows = rows.slice(1).map(row => {
-                return row.map((cell, index) => {
-                    if (index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5) {
-                        return decryptData(cell, ekSaltData.ek_salt, ekSaltData.password);
-                    }
-                    return cell;
-                });
-            });
-
-            const decryptedCSV = [headers].concat(decryptedRows).map(row => row.join(',')).join('\n');
-            const blob = new Blob([decryptedCSV], { type: "text/csv" });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `exported_data.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        toast.update(loadingToast, {
-          render: "Data exported successfully!",
-          type: "success",
-          isLoading: false,
-          autoClose: 2000,
-          closeOnClick: true
-        });
+      toast.update(loadingToast, {
+        render: "Data exported successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+        closeOnClick: true
+      });
     } catch (error) {
-        toast.update(loadingToast, {
-          render: "Error exporting data. Please try again.",
-          type: "error",
-          isLoading: false,
-          autoClose: 2000,
-          closeOnClick: true
-        });
-        console.error("Error exporting data:", error);
+      toast.update(loadingToast, {
+        render: "Error exporting data. Please try again.",
+        type: "error",
+        isLoading: false,
+        autoClose: 2000,
+        closeOnClick: true
+      });
+      console.error("Error exporting data:", error);
     }
   };
 
   return (
     <>
-          <ToastContainer
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -228,85 +228,90 @@ const ImportExportPage: React.FC = () => {
         style={toastContainerStyle}
         className="fixed-toast"
       />
-    <div className="container mx-auto p-4 space-y-8">
-      
-      <section>
-        <h3 className="text-lg font-semibold mb-3">Import</h3>
-        <Card className="shadow-sm max-w-2xl">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <Select
-                onValueChange={(value) => setImportFileType(value as FileType)}
-                defaultValue={importFileType}
-              >
-                <SelectTrigger className="w-24 text-sm">
-                  <SelectValue placeholder="Select file type" />
-                </SelectTrigger>
-                <SelectContent size="sm" className="w-24">
-                  <SelectItem value="json">JSON</SelectItem>
-                  <SelectItem value="csv">CSV</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="w-28 h-28 border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 cursor-pointer relative">
-                <Input
-                  type="file"
-                  onChange={handleImport}
-                  accept={`.${importFileType}`}
-                  className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                />
-                <div className="text-center text-gray-400">
-                  <FaCloudUploadAlt className="mx-auto h-8 w-8" />
-                  <p className="text-sm">Drag & drop</p>
+      <div className="container mx-auto">
+        <h1 className="page-header">Import / Export</h1>
+        <div className="flex flex-col gap-14">
+          <section className="flex flex-col items-start justify-center">
+            <Card className="card-shadow text-sky-950 w-full sm:w-3/4 lg:w-1/2 transition-all ease-in-out duration-300">
+              <CardHeader className="text-center text-xl pb-0">Import</CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="w-full h-28 border-2 border-dashed border-gray-200 rounded-lg flex items-center
+                  justify-center bg-gray-50 hover:bg-gray-100 cursor-pointer relative">
+                    <Input
+                      type="file"
+                      onChange={handleImport}
+                      accept={`.${importFileType}`}
+                      className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                    />
+                    <div className="text-center text-gray-400">
+                      <FaCloudUploadAlt className="mx-auto h-8 w-8" />
+                      <p className="text-sm">Drag & drop</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <Select
+                      onValueChange={(value) => setImportFileType(value as FileType)}
+                      defaultValue={importFileType}
+                    >
+                      <SelectTrigger className="w-full text-sm h-11">
+                        <SelectValue placeholder="Select file type" />
+                      </SelectTrigger>
+                      <SelectContent size="sm" className="w-full">
+                        <SelectItem value="json">JSON</SelectItem>
+                        <SelectItem value="csv">CSV</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <button
+                      onClick={() => document.querySelector('input[type="file"]')?.click()}
+                      className="btn-primary flex-nowrap"
+                    >
+                      <Upload className="mr-2 h-4" /> Import{" "}
+                      {importFileType.toUpperCase()}
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <Button
-                size="sm"
-                onClick={() =>
-                  document.querySelector('input[type="file"]')?.click()
-                }
-              >
-                <Upload className="mr-1 h-3 w-3" /> Import{" "}
-                {importFileType.toUpperCase()}
-              </Button>
-            </div>
-            {importedData && (
-              <div className="mt-4">
-                <h5 className="size-sm font-semibold">Imported Data:</h5>
-                <pre className="bg-gray-100 text-sm p-2 rounded mt-2 overflow-auto max-h-40">
-                  {JSON.stringify(importedData, null, 2)}
-                </pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+                {importedData && (
+                  <div className="mt-4">
+                    <h5 className="size-sm font-semibold">Imported Data:</h5>
+                    <pre className="bg-gray-100 text-sm p-2 rounded mt-2 overflow-auto max-h-40">
+                      {JSON.stringify(importedData, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
-      <section>
-        <h3 className="text-lg font-semibold mb-3">Export</h3>
-        <Card className="shadow-sm max-w-2xl">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <Select
-                onValueChange={(value) => setExportFileType(value as FileType)}
-                defaultValue={exportFileType}
-              >
-                <SelectTrigger className="w-24 text-sm">
-                  <SelectValue placeholder="Select file type" />
-                </SelectTrigger>
-                <SelectContent size="sm" className="w-24">
-                  <SelectItem value="json">JSON</SelectItem>
-                  <SelectItem value="csv">CSV</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button size="sm" onClick={handleExport}>
-                <Download className="mr-1 h-3 w-3" /> Export{" "}
-                {exportFileType.toUpperCase()}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-    </div>
+          <section className="flex flex-col items-start justify-center">
+            <Card className="card-shadow text-sky-950 w-full sm:w-3/4 lg:w-1/2">
+              <CardHeader className="text-center text-xl pb-0">Export</CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex gap-4">
+                  <Select
+                    onValueChange={(value) => setExportFileType(value as FileType)}
+                    defaultValue={exportFileType}
+                  >
+                    <SelectTrigger className="w-full text-sm h-11">
+                      <SelectValue placeholder="Select file type" />
+                    </SelectTrigger>
+                    <SelectContent size="sm" className="w-full">
+                      <SelectItem value="json">JSON</SelectItem>
+                      <SelectItem value="csv">CSV</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <button
+                    onClick={handleExport}
+                    className="btn-primary flex-nowrap">
+                    <Download className="mr-2 h-4" /> Export{" "}
+                    {exportFileType.toUpperCase()}
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+      </div>
     </>
   );
 };
