@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Flip, toast } from "react-toastify";
 import axios from "axios";
 import { Input } from "../components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../components/ui/card";
@@ -35,7 +36,7 @@ const Login: React.FC<LoginProps> = ({ setIsAuthenticated }) => {
       );
       if (response.status === 200) {
         setIsAuthenticated(true);
-        navigate("/passwords");
+        navigate("/passwords", {state: {showSuccessToast: true}});
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {

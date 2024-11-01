@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { toast, Flip } from "react-toastify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -37,7 +39,6 @@ import { FaPlus } from "react-icons/fa";
 import getFaviconUrl from "../utils/scraping/FaviconExtraction";
 import { Textarea } from "../components/ui/textarea";
 import axios from "axios";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { filterPasswords, copyToClipboard, renderCopyButton } from '../utils/helpers';
 import { encryptData, decryptData } from '../utils/encrypt_decrypt';
@@ -68,6 +69,7 @@ const PasswordDashboard: React.FC = () => {
   const [editingPassword, setEditingPassword] = useState<PasswordEntry | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const location = useLocation();
 
   // Fetch EK Salt
   const { data: ekSaltData } = useQuery({
@@ -113,7 +115,22 @@ const PasswordDashboard: React.FC = () => {
       return `https://${url}`;
     }
     return url;
-  };
+  }
+  // show toast message from the login page
+  useEffect(() => {
+    if (location.state?.showSuccessToast) {
+      toast.success(
+        "Logged in successfully",
+        {
+          autoClose: 1500,
+          hideProgressBar: true,
+          pauseOnFocusLoss: false,
+          position: 'top-right',
+          transition: Flip,
+        }
+      )
+    }
+  }, [location.state])
 
   // Save Password Mutation
   const saveMutation = useMutation({
