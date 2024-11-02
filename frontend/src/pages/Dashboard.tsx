@@ -59,6 +59,8 @@ function SecurityDashboard() {
   const [weakPasswords, setWeakPasswords] = useState<string[]>([]);
   const [duplicatePasswords, setDuplicatePasswords] = useState<string[]>([]);
   const [passwords, setPasswords] = useState<PasswordData[]>([]);
+  const [weakPasswordsChecked, setWeakPasswordsChecked] = useState(false);
+  const [duplicatesChecked, setDuplicatesChecked] = useState(false);
 
   const [ekSalt, setEkSalt] = useState<string | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
@@ -172,6 +174,7 @@ function SecurityDashboard() {
       return result.score < 3;
     });
     setWeakPasswords(weak.map((pwd) => pwd.name));
+    setWeakPasswordsChecked(true);
   };
 
   const checkDuplicatePasswords = () => {
@@ -190,6 +193,7 @@ function SecurityDashboard() {
       .flatMap(([_, names]) => names);
 
     setDuplicatePasswords(duplicates);
+    setDuplicatesChecked(true);
   };
 
   async function sha1(str: string) {
@@ -332,15 +336,25 @@ function SecurityDashboard() {
             >
               Analyze Passwords
             </Button>
-            {weakPasswords.length > 0 && (
-              <Alert className="mt-4" variant="destructive">
-                <Unlock className="h-4 w-4" />
-                <AlertTitle>Weak Passwords Detected</AlertTitle>
-                <AlertDescription>
-                  {weakPasswords.length} of your passwords are considered weak:{" "}
-                  {weakPasswords.join(", ")}
-                </AlertDescription>
-              </Alert>
+            {weakPasswordsChecked && (
+              weakPasswords.length > 0 ? (
+                <Alert className="mt-4" variant="destructive">
+                  <Unlock className="h-4 w-4" />
+                  <AlertTitle>Weak Passwords Detected</AlertTitle>
+                  <AlertDescription>
+                    {weakPasswords.length} of your passwords are considered weak:{" "}
+                    {weakPasswords.join(", ")}
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="mt-4">
+                  <Lock className="h-4 w-4" />
+                  <AlertTitle>All Passwords are Strong</AlertTitle>
+                  <AlertDescription>
+                    Great! All your passwords meet the strength requirements.
+                  </AlertDescription>
+                </Alert>
+              )
             )}
           </CardContent>
         </Card>
@@ -360,15 +374,25 @@ function SecurityDashboard() {
             >
               Check for Duplicates
             </Button>
-            {duplicatePasswords.length > 0 && (
-              <Alert className="mt-4" variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Duplicate Passwords Detected</AlertTitle>
-                <AlertDescription>
-                  {duplicatePasswords.length} of your passwords are used
-                  multiple times: {duplicatePasswords.join(", ")}
-                </AlertDescription>
-              </Alert>
+            {duplicatesChecked && (
+              duplicatePasswords.length > 0 ? (
+                <Alert className="mt-4" variant="destructive">
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Duplicate Passwords Detected</AlertTitle>
+                  <AlertDescription>
+                    {duplicatePasswords.length} of your passwords are used
+                    multiple times: {duplicatePasswords.join(", ")}
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="mt-4">
+                  <ShieldCheck className="h-4 w-4" />
+                  <AlertTitle>No Duplicate Passwords</AlertTitle>
+                  <AlertDescription>
+                    Great! All your passwords is unique.
+                  </AlertDescription>
+                </Alert>
+              )
             )}
           </CardContent>
         </Card>
