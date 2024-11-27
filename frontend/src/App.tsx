@@ -143,9 +143,9 @@ const App: React.FC = () => {
           <Routes>
             <Route
               path="/login"
-              element={<Login setIsAuthenticated={setIsAuthenticated} />}
+              element={ !isAuthenticated ? <Login setIsAuthenticated={setIsAuthenticated} /> : <Navigate to="/passwords"/>}
             />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/signup" element={ !isAuthenticated ? <Signup /> : <Navigate to="/passwords"/>} />
             <Route path="/external-auth-password-creation" element={<ExternalAuthPasswordPage/>}/>
             <Route
               path="/passwords"
