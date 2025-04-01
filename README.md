@@ -78,11 +78,18 @@ setup your postgres database
 [www.postgresql.org](https://www.postgresql.org/)
 
 #### backend
+
 - setup your environmental variables:
+
+Note: Please do not use these values in a production environment.
+\
+These are only placeholders for local development.
+
 ```sh
-DATABASE_URI_STRING="<YOUR_DATABASE_URI>"
-SECRET_KEY="<YOUR_SECRET_KEY>"
-CLIENT_ADDRESS="http://localhost:5173"
+DATABASE_URI_STRING="postgresql://postgres:root@localhost/passkeyper"
+SECRET_KEY="l_v]lYRE8Uq~Whr!-6kNGu\1$=-'m>;89~7MVpthKCi=D6-%z"
+CLIENT_ADDRESS="http://localhost:5173/"
+
 ```
 - in one terminal, from the root directory:
 ```sh
